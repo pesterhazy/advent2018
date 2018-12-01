@@ -3,4 +3,4 @@
   {:extra-deps {nrepl #:mvn{:version "0.4.0"}},
    :main-opts
    ["-e"
-    "(do(require,'[nrepl.server,:refer,[start-server]]),(start-server,:port,7888),(println\"nREPL\"))"]}}}
+    "(do(require,'[nrepl.server,:refer,[start-server]]),(let,[port,48888](start-server,:port,7888),(println\"nrepl-port:\",port)))"]}}}
