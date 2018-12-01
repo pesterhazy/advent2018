@@ -10,18 +10,21 @@
     (->> (line-seq f)
          (mapv #(Long/parseLong %)))))
 
+(defn step [[acc-freq acc-seen] n]
+  (let [next-freq (+ acc-freq n)]
+    (if (acc-seen next-freq)
+      (reduced next-freq)
+      [next-freq (conj acc-seen next-freq)])))
+
 (defn frequency [deltas]
-  (let [step (fn [[acc-freq acc-seen] n]
-               (let [next-freq (+ acc-freq n)]
-                 (if (acc-seen next-freq)
-                   (reduced next-freq)
-                   [next-freq (conj acc-seen next-freq)])))
-        result (->> deltas
-                    cycle
-                    (reduce step [0 #{}]))]
-    (if (number? result)
-      result
-      nil)))
+  (->> deltas
+       cycle
+       (reduce step [0 #{}])))
+
+(defn frequency-steps [deltas]
+  (->> deltas
+       cycle
+       (reductions step [0 #{}])))
 
 (defn solution
   []
@@ -32,4 +35,5 @@
 
 (comment
   (frequency sample-deltas)
-  (frequency (read-deltas)))
+  (frequency (read-deltas))
+  (count (frequency-steps (read-deltas))))
