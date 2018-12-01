@@ -16,12 +16,17 @@
       (reduced next-freq)
       [next-freq (conj acc-seen next-freq)])))
 
-(defn frequency [deltas]
+(defn frequency
+  "Return a solution once a frequency is seen twice. Does not terminate if no
+  solution is found"
+  [deltas]
   (->> deltas
        cycle
        (reduce step [0 #{}])))
 
-(defn frequency-steps [deltas]
+(defn frequency-steps
+  "Lazily return all steps leading up to a solution, mostly for debugging"
+  [deltas]
   (->> deltas
        cycle
        (reductions step [0 #{}])))
