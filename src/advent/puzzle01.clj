@@ -1,16 +1,22 @@
 (ns advent.puzzle01)
 
-(defn lines
+(def sample-changes
+  [1 -2 3 1])
+
+(defn read-changes
   []
   (with-open [f (-> "1/input.txt"
                     clojure.java.io/reader)]
-    (doall (line-seq f))))
+    (->> (line-seq f)
+         (mapv #(Long/parseLong %)))))
+
+(defn calc [changes]
+  (->> changes
+       (reduce + 0)))
 
 (defn solution
   []
-  (->> (lines)
-       (map #(Long/parseLong %))
-       (reduce + 0)))
+  (calc (read-changes)))
 
 (defn -main []
   (println (solution)))
