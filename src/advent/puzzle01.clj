@@ -11,8 +11,17 @@
          (mapv #(Long/parseLong %)))))
 
 (defn calc [changes]
-  (->> changes
-       (reduce + 0)))
+  (let [step (fn [[acc-freq acc-seen] n]
+               (let [next-freq (+ acc-freq n)]
+                 (if (acc-seen next-freq)
+                   (reduced next-freq)
+                   [next-freq (conj acc-seen next-freq)])))
+        result (->> changes
+                    cycle
+                    (reduce step [0 #{}]))]
+    (if (number? result)
+      result
+      nil)))
 
 (defn solution
   []
