@@ -3,4 +3,7 @@
   {:extra-deps {nrepl #:mvn{:version "0.4.0"}},
    :main-opts
    ["-e"
-    "(do(require,'[nrepl.server,:refer,[start-server]]),(let,[port,48888](start-server,:port,7888),(println\"nrepl-port:\",port)))"]}}}
+    "(do(require,'[nrepl.server,:refer,[start-server]]),(let,[port,48888](start-server,:port,port),(println\"nrepl-port:\",port)))"]},
+  :in-ns {:main-opts
+          ["-e"
+           "(do(require,'[advent.puzzle01]),(in-ns,'advent.puzzle01),nil)"]}}}

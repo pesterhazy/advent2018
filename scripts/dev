@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 set -euo pipefail && cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
-exec clj -A:nrepl -e "(require,'advent.puzzle01)(in-ns,'advent.puzzle01)" -r "$@"
+exec clj -A:nrepl -A:in-ns -r "$@"
