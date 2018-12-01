@@ -1,1 +1,6 @@
-{:deps {nrepl/nrepl {:mvn/version "0.4.0"}}}
+{:aliases
+ {:nrepl
+  {:extra-deps {nrepl #:mvn{:version "0.4.0"}},
+   :main-opts
+   ["-e"
+    "(do(require,'[nrepl.server,:refer,[start-server]]),(start-server,:port,7888),(println\"nREPL\"))"]}}}
