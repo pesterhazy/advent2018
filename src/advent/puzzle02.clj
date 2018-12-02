@@ -12,7 +12,7 @@
                     clojure.java.io/reader)]
     (vec (line-seq f))))
 
-(defn checksum
+(defn solution-1
   [codes]
   (let [{twos 2, threes 3} (->> codes
                                 (mapcat (fn [code]
@@ -49,12 +49,21 @@
   [pair]
   (when (= 1 (apply distance pair)) pair))
 
-(defn clean [a b]
-  (->> (map vector a b) (keep (fn [[x y]] (when (= x y) x))) (clojure.string/join)))
+(defn shared-letters
+  "Given two strings of the same length, return string containg only common
+  letters"
+  [a b]
+  (->> (map vector a b)
+       (keep (fn [[x y]] (when (= x y) x)))
+       (clojure.string/join)))
 
-(defn solution
+(defn solution-2
   [xs]
   (some->> xs
            pairs
            (some neighbors)
-           (apply clean)))
+           (apply shared-letters)))
+
+(comment
+  (solution-1 (read-codes))
+  (solution-2 (read-codes)))
