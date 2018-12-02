@@ -3,6 +3,8 @@
 (def sample-codes
   ["abcdef" "bababc" "abbcde" "abcccd" "aabcdd" "abcdee" "ababab"])
 
+(def sample-codes2 ["abcde" "fghij" "klmno" "pqrst" "fguij" "axcye" "wvxyz"])
+
 (defn read-codes
   []
   (with-open [f (-> "2/input.txt"
@@ -20,3 +22,23 @@
                                                distinct)))
                                 frequencies)]
     (* (or twos 0) (or threes 3))))
+
+(defn distance
+  [a b]
+  (->> (map not= a b)
+       (filter identity)
+       count))
+
+(defn pairs
+  [xs]
+  (loop [acc []
+         [fst & nxt] xs]
+    (let [acc (into acc (map (fn [x] [fst x]) nxt))]
+      (if nxt (recur acc nxt) acc))))
+
+(defn neighbors
+  [xs]
+  (->> xs
+       pairs
+       (some (fn [pair] (when (= 1 (apply distance pair))
+                          pair)))))
