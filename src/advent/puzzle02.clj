@@ -1,4 +1,5 @@
-(ns advent.puzzle02)
+(ns advent.puzzle02
+  (:require [clojure.string]))
 
 (def sample-codes
   ["abcdef" "bababc" "abbcde" "abcccd" "aabcdd" "abcdee" "ababab"])
@@ -44,7 +45,16 @@
               (lazy-cat (map (fn [x] [fst x]) nxt) (pairs nxt)))))
 
 (defn neighbors
+  "Returns pair only if elements are neighbors"
+  [pair]
+  (when (= 1 (apply distance pair)) pair))
+
+(defn clean [a b]
+  (->> (map vector a b) (keep (fn [[x y]] (when (= x y) x))) (clojure.string/join)))
+
+(defn solution
   [xs]
-  (->> xs
-       pairs
-       (some (fn [pair] (when (= 1 (apply distance pair)) pair)))))
+  (some->> xs
+           pairs
+           (some neighbors)
+           (apply clean)))
