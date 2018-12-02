@@ -29,16 +29,22 @@
        (filter identity)
        count))
 
-(defn pairs
+(defn pairs*
+  "Eager version of pairs"
   [xs]
   (loop [acc []
          [fst & nxt] xs]
     (let [acc (into acc (map (fn [x] [fst x]) nxt))]
       (if nxt (recur acc nxt) acc))))
 
+(defn pairs
+  "Returns a lazy sequence containg pairwise combinations of xs"
+  [xs]
+  (lazy-seq (when-let [[fst & nxt] xs]
+              (lazy-cat (map (fn [x] [fst x]) nxt) (pairs nxt)))))
+
 (defn neighbors
   [xs]
   (->> xs
        pairs
-       (some (fn [pair] (when (= 1 (apply distance pair))
-                          pair)))))
+       (some (fn [pair] (when (= 1 (apply distance pair)) pair)))))

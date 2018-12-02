@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail && cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
-exec clj -A:nrepl "-e" "(do(require,'[advent.puzzle02]),(in-ns,'advent.puzzle02),nil)" -r "$@"
+exec clojure \
+     -A:nrepl:rebel \
+     -i dev/init.clj \
+     -e "(do (require 'advent.puzzle02) (in-ns 'advent.puzzle02) nil)" \
+     -m rebel-readline.main \
+     "$@"
