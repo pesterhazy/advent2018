@@ -1,4 +1,5 @@
-(ns advent.puzzle03)
+(ns advent.puzzle03
+  (:require [clojure.set :as set]))
 
 (set! *warn-on-reflection* true)
 
@@ -8,7 +9,8 @@
 
 (def regex #"#(\d+) @ (\d+),(\d+): (\d+)x(\d+)")
 
-(defn parse [line]
+(defn parse
+  [line]
   (->> (re-matches regex line)
        rest
        (map #(Long/parseLong %))
@@ -31,24 +33,37 @@
 (def canvas-width 1000)
 (def canvas-height 1000)
 
-(defn make-canvas []
-  (make-array Integer/TYPE canvas-width canvas-height))
+(defn make-canvas [] (make-array Integer/TYPE canvas-width canvas-height))
 
-(defn paint! [canvas {:keys [left top width height]}]
-  (doseq [y (range top (+ top height))
-          x (range left (+ left width))]
-    (aset-int canvas x y (inc (aget canvas x y)))))
+(defn paint!
+  "Mutates canvas. Returns set of dirty ids"
+  [canvas {:keys [id left top width height]}]
+  (let [!dirty (atom #{})]
+    (doseq [y (range top (+ top height))
+            x (range left (+ left width))]
+      (let [v (aget canvas x y)]
+        (cond (zero? v) (aset-int canvas x y id)
+              (pos? v) (do (swap! !dirty conj id v) (aset-int canvas x y -1))
+              :else (swap! !dirty conj id))))
+    @!dirty))
 
-(defn overlap [canvas]
+(defn overlap
+  [canvas]
   (->> (for [y (range canvas-height)
              x (range canvas-width)]
-         (if (> (aget canvas x y) 1) 1 0))
+         (if (= (aget canvas x y) -1) 1 0))
        (reduce +)))
 
-(defn solution-1 [lines]
+(defn solution-1
+  [lines]
   (let [canvas (make-canvas)
         claims (->> lines
-                    (map parse))]
-    (doseq [claim claims]
-      (paint! canvas claim))
-    (overlap canvas)))
+                    (map parse))
+        dirty (->> (for [claim claims] (paint! canvas claim))
+                   (apply concat)
+                   set)
+        all-ids (->> claims
+                     (map :id)
+                     set)
+        not-dirty (set/difference all-ids dirty)]
+    {:number-overlapping (overlap canvas), :not-diry not-dirty}))
