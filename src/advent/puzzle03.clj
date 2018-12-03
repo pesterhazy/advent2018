@@ -54,7 +54,7 @@
          (if (= (aget canvas x y) -1) 1 0))
        (reduce +)))
 
-(defn solution-1
+(defn solution-1-and-2
   [lines]
   (let [canvas (make-canvas)
         claims (->> lines
