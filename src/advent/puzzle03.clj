@@ -5,8 +5,12 @@
   #3 @ 5,5: 2x2")
 
 (def regex #"#(\d+) @ (\d+),(\d+): (\d+)x(\d+)")
+
 (defn parse [line]
-  (zipmap [:id :x :y :width :height] (rest (re-matches regex line))))
+  (->> (re-matches regex line)
+       rest
+       (map #(Long/parseLong %))
+       (zipmap [:id :left :top :width :height])))
 
 (defn read-sample-input
   []
@@ -15,3 +19,32 @@
        clojure.java.io/reader
        line-seq
        (map clojure.string/trim)))
+
+(def sample-claims (mapv parse (read-sample-input)))
+
+(def canvas-width 1000)
+(def canvas-height 1000)
+
+(defn make-canvas []
+  (make-array Integer/TYPE canvas-width canvas-height))
+
+(def sample-canvas (make-canvas))
+
+(defn paint! [canvas {:keys [left top width height]}]
+  (doseq [y (range top (+ top height))
+          x (range left (+ left width))]
+    (aset-int canvas x y (inc (aget canvas x y)))))
+
+(defn overlap [canvas]
+  (->> (for [y (range canvas-height)
+             x (range canvas-width)]
+         (if (> (aget canvas x y) 1) 1 0))
+       (reduce +)))
+
+(defn solution-1 [lines]
+  (let [canvas (make-canvas)
+        claims (->> lines
+                    (map parse))]
+    (doseq [claim claims]
+      (paint! canvas claim))
+    (overlap canvas)))
