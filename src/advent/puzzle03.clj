@@ -1,5 +1,7 @@
 (ns advent.puzzle03)
 
+(set! *warn-on-reflection* true)
+
 (def sample-input "#1 @ 1,3: 4x4
   #2 @ 3,1: 4x4
   #3 @ 5,5: 2x2")
@@ -20,15 +22,17 @@
        line-seq
        (map clojure.string/trim)))
 
-(def sample-claims (mapv parse (read-sample-input)))
+(defn read-input
+  []
+  (with-open [f (-> "3/input.txt"
+                    clojure.java.io/reader)]
+    (vec (line-seq f))))
 
 (def canvas-width 1000)
 (def canvas-height 1000)
 
 (defn make-canvas []
   (make-array Integer/TYPE canvas-width canvas-height))
-
-(def sample-canvas (make-canvas))
 
 (defn paint! [canvas {:keys [left top width height]}]
   (doseq [y (range top (+ top height))
