@@ -39,7 +39,7 @@
         (fn [m]
           {:id (:id m), :date (:date m), :start (:start m), :end (:min m)}))))
 
-(defn solution-1
+(defn solution-1-and-2
   [es]
   (let [id->es (group-by :id es)
         ;; s1
