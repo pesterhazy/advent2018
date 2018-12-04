@@ -31,6 +31,7 @@
 (defn events
   [lines]
   (->> lines
+       sort
        (map parse)
        fill-in
        (filter #(= :end (:event %)))
@@ -41,20 +42,35 @@
 (defn solution-1
   [es]
   (let [id->es (group-by :id es)
-        id+durations (map (fn [[id es]] [id
-                                         (->> es
-                                              (map (fn [e]
-                                                     (- (:end e) (:start e))))
-                                              (apply +))])
-                          id->es)
-        sleepiest-id (->> id+durations
+        id->durations (->> id->es
+                           (map (fn [[id es]]
+                                  [id
+                                   (->> es
+                                        (map (fn [e] (- (:end e) (:start e))))
+                                        (apply +))]))
+                           (into {}))
+        sleepiest-id (->> id->durations
                           (sort-by (comp - second))
                           first
-                          first)]
-    sleepiest-id))
+                          first)
+        es (id->es sleepiest-id)
+        sleepiest-min (->> es
+                           (map (juxt :start :end))
+                           (mapcat (partial apply range))
+                           frequencies
+                           (sort-by (comp - second))
+                           first
+                           first)]
+    (* sleepiest-id sleepiest-min)))
+
+(defn read-sample
+  []
+  (with-open [f (-> "4/sample.txt"
+                    clojure.java.io/reader)]
+    (vec (line-seq f))))
 
 (defn read-input
   []
-  (with-open [f (-> "4/sample.txt"
+  (with-open [f (-> "4/input.txt"
                     clojure.java.io/reader)]
     (vec (line-seq f))))
