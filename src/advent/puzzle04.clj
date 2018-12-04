@@ -52,16 +52,14 @@
                            (into {}))
         sleepiest-id (->> id->durations
                           (sort-by (comp - second))
-                          first
-                          first)
+                          ffirst)
         es (id->es sleepiest-id)
         sleepiest-min (->> es
                            (map (juxt :start :end))
                            (mapcat (partial apply range))
                            frequencies
                            (sort-by (comp - second))
-                           first
-                           first)
+                           ffirst)
         ;; s2
         id+mins (->> id->es
                      (mapcat (fn [[id es]]
@@ -72,8 +70,7 @@
         sleepiest-id+min (->> id+mins
                               frequencies
                               (sort-by (comp - second))
-                              first
-                              first)]
+                              ffirst)]
     {:solution-1 (* sleepiest-min sleepiest-id),
      :solution-2 (apply * sleepiest-id+min)}))
 
