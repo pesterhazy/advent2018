@@ -42,6 +42,7 @@
 (defn solution-1
   [es]
   (let [id->es (group-by :id es)
+        ;; s1
         id->durations (->> id->es
                            (map (fn [[id es]]
                                   [id
@@ -60,8 +61,21 @@
                            frequencies
                            (sort-by (comp - second))
                            first
-                           first)]
-    (* sleepiest-id sleepiest-min)))
+                           first)
+        ;; s2
+        id+mins (->> id->es
+                     (mapcat (fn [[id es]]
+                               (->> es
+                                    (map (juxt :start :end))
+                                    (mapcat (partial apply range))
+                                    (map vector (repeat id))))))
+        sleepiest-id+min (->> id+mins
+                              frequencies
+                              (sort-by (comp - second))
+                              first
+                              first)]
+    {:solution-1 (* sleepiest-min sleepiest-id),
+     :solution-2 (apply * sleepiest-id+min)}))
 
 (defn read-sample
   []
