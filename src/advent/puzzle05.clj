@@ -37,4 +37,16 @@
        (filter identity)
        count))
 
-(defn solution-1 [] (scan (str/trim (slurp "5/input.txt"))))
+(defn solution-1 []
+  (scan (vec (str/trim (slurp "5/input.txt")))))
+
+(defn solution-2 []
+  (let [input (vec (str/trim (slurp "5/input.txt")))]
+    (->> (map char (range 97 123))
+         (map (fn [ch]
+                (prn ch)
+                (->> input
+                     (filterv #(and (not= ch %)
+                                    (not= (Character/toUpperCase ch) %)))
+                     (scan))))
+         (apply min))))
