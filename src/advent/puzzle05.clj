@@ -1,4 +1,5 @@
-(ns advent.puzzle05)
+(ns advent.puzzle05
+  (:require [clojure.string :as str]))
 
 (def sample-input "dabAcCaCBAcCcaDA")
 
@@ -15,21 +16,25 @@
 
 (defn scan
   [xs]
-  (loop [xs (vec xs)
-         idx 0]
-    (cond
-      (>= idx (dec (count xs))) xs
-      (nil? (nth xs idx)) (recur xs (inc idx))
-      :else (let [left (find-pred identity xs idx true)]
-              (if (and left (polar? (nth xs left) (nth xs idx)))
-                (recur (assoc xs
-                              idx nil
-                              left nil)
-                       idx)
-                (let [right (find-pred identity xs idx false)]
-                  (if (and right (polar? (nth xs idx) (nth xs right)))
-                    (recur (assoc xs
-                                  idx nil
-                                  right nil)
-                           idx)
-                    (recur xs (inc idx)))))))))
+  (->> (loop [xs (vec xs)
+              idx 0]
+         (cond
+           (>= idx (dec (count xs))) xs
+           (nil? (nth xs idx)) (recur xs (inc idx))
+           :else (let [left (find-pred identity xs idx true)]
+                   (if (and left (polar? (nth xs left) (nth xs idx)))
+                     (recur (assoc xs
+                                   idx nil
+                                   left nil)
+                            idx)
+                     (let [right (find-pred identity xs idx false)]
+                       (if (and right (polar? (nth xs idx) (nth xs right)))
+                         (recur (assoc xs
+                                       idx nil
+                                       right nil)
+                                idx)
+                         (recur xs (inc idx))))))))
+       (filter identity)
+       count))
+
+(defn solution-1 [] (scan (str/trim (slurp "5/input.txt"))))
