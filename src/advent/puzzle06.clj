@@ -19,6 +19,7 @@
 
 (def width 358)
 (def height 353)
+(def threshold 10000)
 
 (defn edge? [[x y]]
   (or (= x 0)
@@ -53,7 +54,7 @@
               [old-id old-distance])]))
        (into {})))
 
-(defn solution []
+(defn solution-1 []
   (let [grid (->> (read-input)
                   parse
                   (map-indexed vector)
@@ -69,3 +70,19 @@
                        (when-not (disqualified id)
                          area))
                      candidates))))
+
+
+(defn total-distance [[x y] coords]
+  (->> coords
+       (map (fn [[coord-x coord-y]]
+              (+ (Math/abs (- coord-x x))
+                 (Math/abs (- coord-y y)))))
+       (apply +)))
+
+(defn solution-2 []
+  (let [coords (->> (read-input) parse)]
+    (->> (for [y (range height)
+               x (range width)]
+           (total-distance [x y] coords))
+         (filter (fn [total-distance] (< total-distance threshold)))
+         count)))
