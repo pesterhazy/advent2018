@@ -21,6 +21,12 @@
       (= x (dec width))
       (= y (dec height))))
 
+(defn edge-locations []
+  (for [y (range height)
+        x (range width)
+        :when (edge? [x y])]
+    [x y]))
+
 (defn color
   "Takes a grid, a id and a coordinate [x y] and returns
   a new grid with points representing distance to coordinate"
@@ -43,9 +49,18 @@
        (into {})))
 
 (defn solution []
-  (->> (read-sample)
-       parse
-       (map-indexed vector)
-       (reduce (fn [grid [id coord]]
-                 (color grid id coord))
-               {})))
+  (let [grid (->> (read-sample)
+                  parse
+                  (map-indexed vector)
+                  (reduce (fn [grid [id coord]]
+                            (color grid id coord))
+                          {}))
+        candidates (->> grid vals (keep first) frequencies)
+        disqualified (->> (edge-locations)
+                          (map grid)
+                          (keep first)
+                          set)]
+    (apply max (keep (fn [[id area]]
+                       (when-not (disqualified id)
+                         area))
+                     candidates))))
