@@ -20,3 +20,14 @@
       (= y 0)
       (= x (dec width))
       (= y (dec height))))
+
+(defn color
+  "Takes a grid, a id and a coordinate [x y] and returns
+  a new grid with points representing distance to coordinate"
+  [grid id [coord-x coord-y]]
+  (->> (for [y (range height)
+             x (range width)]
+         (let [distance (+ (Math/abs (- coord-x x))
+                           (Math/abs (- coord-y y)))]
+           [[x y] [id distance]]))
+       (into {})))
