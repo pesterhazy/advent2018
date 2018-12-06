@@ -27,7 +27,25 @@
   [grid id [coord-x coord-y]]
   (->> (for [y (range height)
              x (range width)]
-         (let [distance (+ (Math/abs (- coord-x x))
+         (let [[old-id old-distance :as v] (get grid [x y])
+               distance (+ (Math/abs (- coord-x x))
                            (Math/abs (- coord-y y)))]
-           [[x y] [id distance]]))
+           [[x y]
+            (cond
+              (or (nil? v) (< distance old-distance))
+              [id distance]
+
+              (= distance old-distance)
+              [nil distance]
+
+              :else
+              [old-id old-distance])]))
        (into {})))
+
+(defn solution []
+  (->> (read-sample)
+       parse
+       (map-indexed vector)
+       (reduce (fn [grid [id coord]]
+                 (color grid id coord))
+               {})))
