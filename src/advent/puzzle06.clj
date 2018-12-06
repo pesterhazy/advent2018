@@ -6,14 +6,19 @@
                     clojure.java.io/reader)]
     (vec (line-seq f))))
 
+(defn read-input
+  []
+  (with-open [f (-> "6/input.txt"
+                    clojure.java.io/reader)]
+    (vec (line-seq f))))
 
 (defn parse [xs]
   (->> xs
        (map #(clojure.string/split % #",\s*"))
        (mapv (partial mapv #(Long/parseLong %)))))
 
-(def width 10)
-(def height 10)
+(def width 358)
+(def height 353)
 
 (defn edge? [[x y]]
   (or (= x 0)
@@ -49,7 +54,7 @@
        (into {})))
 
 (defn solution []
-  (let [grid (->> (read-sample)
+  (let [grid (->> (read-input)
                   parse
                   (map-indexed vector)
                   (reduce (fn [grid [id coord]]
