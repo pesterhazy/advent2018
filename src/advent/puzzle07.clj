@@ -76,6 +76,7 @@
              now
              (conj done ready-task)
              (conj acc ready-task))
+      ;; all workers idle or in flight
       (let [nxt-tasks (->> m
                            (keep (fn [[k v]]
                                    (when (and (not (done k))
@@ -84,24 +85,28 @@
             available? (->> workers vals (map second) set complement)
             nxt (->> nxt-tasks (filter available?) first)]
         (cond
+
           ;; new task available
           nxt
-          (let [worker-id (some (fn [[id task-vec]]
-                                  (when (nil? task-vec) id))
-                                workers)]
-            (if worker-id
-              ;; found an idle worker
-              (recur (assoc workers worker-id [(+ now delay (cost nxt))
-                                               nxt])
-                     now
-                     done
-                     acc)
-              ;; no idle worker found
-              (recur workers (next-time workers) done acc)))
+          (if-let [worker-id (some (fn [[id task-vec]]
+                                     (when (nil? task-vec) id))
+                                   workers)]
+            ;; found an idle worker
+            (recur (assoc workers worker-id [(+ now delay (cost nxt))
+                                             nxt])
+                   now
+                   done
+                   acc)
+            ;; no idle worker found
+            (recur workers (next-time workers) done acc))
+
           ;; new tasks available but all in flight
           (seq nxt-tasks)
           (recur workers (next-time workers) done acc)
-          ;; no new tasks available
+
+          ;; all tasks done
           :else
-          now
-          #_(str/join acc))))))
+          now)))))
+
+(defn solution-2 []
+  (walk-2 (->> (read-input) (map parse) ->deps) 5 60))
