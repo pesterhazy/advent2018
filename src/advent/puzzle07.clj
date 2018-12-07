@@ -43,7 +43,7 @@
         (recur (conj done nxt) (conj acc nxt))
         (str/join acc)))))
 
-{0 [3 "C"]}
+;; worker format: {0 [3 "C"]}
 
 (defn solution-1 []
   (->> (read-input)
@@ -77,6 +77,8 @@
              (conj done ready-task)
              (conj acc ready-task))
       ;; all workers idle or in flight
+      ;;
+      ;; figure what to do next by looking at tasks
       (let [nxt-tasks (->> m
                            (keep (fn [[k v]]
                                    (when (and (not (done k))
