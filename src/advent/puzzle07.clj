@@ -54,6 +54,13 @@
 (defn cost [task]
   (-> task (.charAt 0) int (- (int \A)) inc))
 
+(defn next-time [workers]
+  (->> workers
+       vals
+       (filter identity)
+       (map first)
+       (apply min)))
+
 (defn walk-2 [m n-workers delay]
   (loop [workers (->> (range n-workers) (map (fn [k] [k nil])) (into {}))
          now 0
@@ -90,24 +97,10 @@
                      done
                      acc)
               ;; no idle worker found
-              (recur workers
-                     (->> workers
-                          vals
-                          (filter identity)
-                          (map first)
-                          (apply min))
-                     done
-                     acc)))
+              (recur workers (next-time workers) done acc)))
           ;; new tasks available but all in flight
           (seq nxt-tasks)
-          (recur workers
-                 (->> workers
-                      vals
-                      (filter identity)
-                      (map first)
-                      (apply min))
-                 done
-                 acc)
+          (recur workers (next-time workers) done acc)
           ;; no new tasks available
           :else
           now
