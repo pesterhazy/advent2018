@@ -59,7 +59,6 @@
          now 0
          done #{}
          acc []]
-    (prn workers now done acc)
     (if-let [[ready-id ready-task] (some (fn [[id [busy-until task]]]
                                            (when (and busy-until
                                                       (>= now busy-until))
@@ -70,13 +69,16 @@
              now
              (conj done ready-task)
              (conj acc ready-task))
-      (let [nxt (->> m
-                     (some (fn [[k v]]
-                             (when (and (not (done k))
-                                        (set/subset? v done))
-                               k))))]
-        (if nxt
+      (let [nxt-tasks (->> m
+                           (keep (fn [[k v]]
+                                   (when (and (not (done k))
+                                              (set/subset? v done))
+                                     k))))
+            available? (->> workers vals (map second) set complement)
+            nxt (->> nxt-tasks (filter available?) first)]
+        (cond
           ;; new task available
+          nxt
           (let [worker-id (some (fn [[id task-vec]]
                                   (when (nil? task-vec) id))
                                 workers)]
@@ -96,6 +98,17 @@
                           (apply min))
                      done
                      acc)))
+          ;; new tasks available but all in flight
+          (seq nxt-tasks)
+          (recur workers
+                 (->> workers
+                      vals
+                      (filter identity)
+                      (map first)
+                      (apply min))
+                 done
+                 acc)
           ;; no new tasks available
+          :else
           now
           #_(str/join acc))))))
