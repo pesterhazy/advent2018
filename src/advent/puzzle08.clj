@@ -7,6 +7,12 @@
       slurp
       (str/split #"\s")))
 
+(defn read-input
+  []
+  (-> "8/input.txt"
+      slurp
+      (str/split #"\s")))
+
 (defn parse [xs]
   (map #(Long/parseLong %) xs))
 
@@ -27,3 +33,23 @@
 
 (defn read-node [xs]
   (-> (read-node* xs) first))
+
+(defn solution-1 []
+  (->> (read-input)
+       parse
+       read-node
+       (tree-seq map? :children)
+       (mapcat :entries)
+       (apply +)))
+
+(defn value [{:keys [entries children] :as node}]
+  (prn "NODE" node)
+  (if (seq children)
+    (->> entries
+         (map (fn [n]
+                (prn (get children n 0))
+                (-> (get children n 0) value)))
+         (apply +))
+    (do
+      (prn [:no-children (apply + entries) entries])
+      (apply + entries))))
