@@ -2,6 +2,6 @@
 set -euo pipefail && cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
 exec clojure \
-     -A:nrepl:rebel \
+     -R:nrepl:rebel \
      "$@" \
      -i dev/init.clj

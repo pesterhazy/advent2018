@@ -11,6 +11,8 @@
 (require initial-ns)
 (in-ns initial-ns)
 
+(use 'clojure.repl)
+
 (rebel-readline.main/-main)
 
 ;; done
