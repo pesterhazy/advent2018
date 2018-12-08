@@ -1,0 +1,2 @@
+- [ ] ^C doesn't quit the REPL
+- [ ] script to start a new puzzle
