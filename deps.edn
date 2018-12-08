@@ -1,3 +1,3 @@
-{:aliases {:nrepl {:extra-deps {nrepl #:mvn{:version "0.4.0"}}},
+{:aliases {:nrepl {:extra-deps {nrepl #:mvn{:version "0.5.1"}}},
            :rebel {:extra-deps #:com.bhauman{rebel-readline
                                              #:mvn{:version "RELEASE"}}}}}
