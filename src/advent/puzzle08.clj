@@ -43,13 +43,12 @@
        (apply +)))
 
 (defn value [{:keys [entries children] :as node}]
-  (prn "NODE" node)
   (if (seq children)
     (->> entries
-         (map (fn [n]
-                (prn (get children n 0))
-                (-> (get children n 0) value)))
+         (keep (fn [n]
+                 (some-> (get children (dec n)) value)))
          (apply +))
-    (do
-      (prn [:no-children (apply + entries) entries])
-      (apply + entries))))
+    (apply + entries)))
+
+(defn solution-2 []
+  (-> (read-input) parse read-node value))
