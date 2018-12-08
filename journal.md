@@ -8,6 +8,6 @@ Day 07
 
 Conclusions
 
-- Use `clojure.tools.trace` more often
+- Use `clojure.tools.trace` more often (especially with recursive functions)
 - Keep aliases around in `~/.clojure/deps.edn` to easily add a dependency
 - Need to smooth out my REPL editor workflow. What value is CIDER actually giving me? Should I just go back to inf-clojure?
