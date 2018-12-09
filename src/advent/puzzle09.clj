@@ -35,7 +35,7 @@ Returns pair: [updated-nlist found-marble]"))
 (defn empty-mlist [] [])
 
 ;; -----------------
-;; Implementation 2
+;; Implementation 2: sorted-map
 
 (defn between
   [^double a ^double b]
