@@ -1,4 +1,5 @@
-(ns advent.puzzle09)
+(ns advent.puzzle09
+  (:require [clojure.string :as str]))
 
 (defprotocol IMarbleList
   (insert-1 [mlist x]
@@ -6,7 +7,7 @@
   (backshift
     [mlist backshift-pos]
     "Removes a marble backshift-pos marble before current.
-Marble after remove marble comes current")
+Marble after the one just removes comes current")
   (nth-ccw [mlist n] "Returns the marble n places before the current"))
 
 ;; -----------------
@@ -64,6 +65,15 @@ Marble after remove marble comes current")
   (nth-ccw [_ n]
     (let [ks (vec (keys m))]
       (get m (nth ks (mod (- (.indexOf ks current-k) n) (count ks)))))))
+
+(defn print-fast-mlist
+  [{:keys [m current-k]}]
+  (->> m
+       (map (fn [[k v]]
+              (if (= k current-k)
+                (str "(" v ")")
+                (str v))))
+       (str/join " ")))
 
 (defn empty-fast-mlist [] (->FastMarbleList (sorted-map) nil))
 
