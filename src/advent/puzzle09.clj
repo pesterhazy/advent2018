@@ -84,7 +84,7 @@ Marble after the one just removed comes current")
       (->FastMarbleList (assoc m new-k x) new-k)))
   (backshift [_ n]
     (let [ks (vec (keys m))
-          idx ^long (mod ^long (- ^int (.indexOf ^clojure.lang.PersistentVector ks current-k) n) ^long (count ks))
+          idx ^long (mod ^long (- ^int (.indexOf ^clojure.lang.PersistentVector ks current-k) ^long n) ^long (count ks))
           idx-after (mod (inc ^long idx) (count ks))]
       (->FastMarbleList (dissoc m (nth ks idx))
                         (nth ks idx-after))))
