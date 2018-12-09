@@ -2,7 +2,7 @@
 
 (defprotocol IMarbleList
   (insert-1 [mlist x]
-    "Insert a marble after the 1st element. New marble becomes current")
+            "Insert a marble after the 1st element. New marble becomes current")
   (backshift
     [mlist backshift-pos]
     "Removes a marble backshift-pos marble before current.
@@ -14,19 +14,19 @@ Marble after remove marble comes current")
 
 (extend-type clojure.lang.PersistentVector
   IMarbleList
-  (insert-1 [mlist x]
-    (into [x]
-          (->> mlist
-               cycle
-               (drop 2)
-               (take (count mlist)))))
-  (backshift [mlist backshift-pos]
-    (->> mlist
-         cycle
-         (drop (- (count mlist) (dec backshift-pos)))
-         (take (dec (count mlist)))
-         vec))
-  (nth-ccw [mlist n] (nth mlist (- (count mlist) n))))
+    (insert-1 [mlist x]
+      (into [x]
+            (->> mlist
+                 cycle
+                 (drop 2)
+                 (take (count mlist)))))
+    (backshift [mlist backshift-pos]
+      (->> mlist
+           cycle
+           (drop (- (count mlist) (dec backshift-pos)))
+           (take (dec (count mlist)))
+           vec))
+    (nth-ccw [mlist n] (nth mlist (- (count mlist) n))))
 
 (defn empty-mlist [] [])
 
@@ -37,11 +37,13 @@ Marble after remove marble comes current")
 
 (defn between
   [a b]
-  (let [v (if (< a b) (* 0.5 (+ a b)) (+ a 1.0))]
-    (if (< a v b)
-      v
-      (throw (ex-info "Floating-point precision exhausted"
-                      {:a a, :b b, :v v})))))
+  (if (< a b)
+    (let [v (* 0.5 (+ a b))]
+      (if (< a v b) v (throw (ex-info "Invariant failed" {:a a, :b b, :v v}))))
+    (let [v (+ a 1.0)]
+      (if (< b a v)
+        v
+        (throw (ex-info "Invariant failed" {:a a, :b b, :v v}))))))
 
 (defn find-pos
   [pos ps]
@@ -61,7 +63,8 @@ Marble after remove marble comes current")
       (let [new-k (find-pos current-k (keys m))]
         (->FastMarbleList (assoc m new-k x) new-k)))
     (backshift [_ backshift-pos] m)
-    (nth-ccw [_ n] nil))
+    (nth-ccw [_ n]
+      (let [ks (keys m)] (mod (- (.indexOf ks current-k) n) (count ks)))))
 
 (defn empty-fast-mlist [] (->FastMarbleList (sorted-map) nil))
 
