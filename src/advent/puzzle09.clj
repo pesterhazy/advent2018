@@ -5,9 +5,9 @@
   (insert-1 [mlist x]
     "Insert a marble after the 1st element. New marble becomes current")
   (backshift
-    [mlist backshift-pos]
-    "Removes a marble backshift-pos marble before current.
-Marble after the one just removes comes current")
+    [mlist n]
+    "Removes a marble n marble before current.
+Marble after the one just removed comes current")
   (nth-ccw [mlist n] "Returns the marble n places before the current"))
 
 ;; -----------------
@@ -21,10 +21,10 @@ Marble after the one just removes comes current")
                cycle
                (drop 2)
                (take (count mlist)))))
-  (backshift [mlist backshift-pos]
+  (backshift [mlist n]
     (->> mlist
          cycle
-         (drop (- (count mlist) (dec backshift-pos)))
+         (drop (- (count mlist) (dec n)))
          (take (dec (count mlist)))
          vec))
   (nth-ccw [mlist n] (nth mlist (- (count mlist) n))))
@@ -61,7 +61,12 @@ Marble after the one just removes comes current")
   (insert-1 [_ x]
     (let [new-k (find-pos current-k (keys m))]
       (->FastMarbleList (assoc m new-k x) new-k)))
-  (backshift [_ backshift-pos] m)
+  (backshift [_ n]
+    (let [ks (vec (keys m))
+          idx (mod (- (.indexOf ks current-k) n) (count ks))
+          idx-after (mod (inc idx) (count ks))]
+      (->FastMarbleList (dissoc m (nth ks idx))
+                        (nth ks idx-after))))
   (nth-ccw [_ n]
     (let [ks (vec (keys m))]
       (get m (nth ks (mod (- (.indexOf ks current-k) n) (count ks)))))))
