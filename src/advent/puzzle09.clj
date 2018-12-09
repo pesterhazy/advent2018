@@ -51,21 +51,6 @@ Returns pair: [updated-nlist found-marble]"))
     :else
     (+ a 1.0)))
 
-(defn find-pos*
-  [pos m]
-  (let [ps (keys m)]
-    (if (empty? ps)
-      1.0
-      (loop [[x & rst :as xs] ps]
-        (cond
-          (= x pos)
-          (let [wrap-around (concat rst ps ps)]
-            (between (first wrap-around) (second wrap-around)))
-          rst
-          (recur rst)
-          :else
-          nil)))))
-
 (defn find-pos
   [pos m]
   (if (empty? m)
