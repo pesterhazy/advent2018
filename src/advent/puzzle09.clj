@@ -2,25 +2,35 @@
 
 (defn nth-ccw [xs n] (nth xs (- (count xs) n)))
 
+(defn insert-1
+  "Insert a marble before the 2nd element"
+  [xs x]
+  (into [x]
+        (->> xs
+             cycle
+             (drop 2)
+             (take (count xs)))))
+
+(defn backshift
+  [xs backshift-pos]
+  (->> xs
+       cycle
+       (drop (- (count xs) (dec backshift-pos)))
+       (take (dec (count xs)))
+       vec))
+
 (defn simulate
   "Takes a sequence of marbles, returns score"
-  [{:keys [n-players backshift bingo]} marbles]
-  (let [turn (fn [[xs score] x]
-               (if (zero? (mod x bingo))
-                 (let [player (inc (mod (dec x) n-players))]
-                   [(->> xs
-                         cycle
-                         (drop (- (count xs) (dec backshift)))
-                         (take (dec (count xs)))
-                         vec)
-                    (update score
-                            player
-                            (fn [n] (+ (or n 0) x (nth-ccw xs backshift))))])
-                 [(into [x]
-                        (->> xs
-                             cycle
-                             (drop 2)
-                             (take (count xs)))) score]))]
+  [{:keys [n-players backshift-pos bingo]} marbles]
+  (let [turn
+        (fn [[xs score] x]
+          (if (zero? (mod x bingo))
+            (let [player (inc (mod (dec x) n-players))]
+              [(backshift xs backshift-pos)
+               (update score
+                       player
+                       (fn [n] (+ (or n 0) x (nth-ccw xs backshift-pos))))])
+            [(insert-1 xs x) score]))]
     (second (reduce turn [[1] nil] marbles))))
 
 (defn winner
