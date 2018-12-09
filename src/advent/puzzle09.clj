@@ -88,6 +88,8 @@ Marble after the one just removed comes current")
   "Takes a sequence of marbles, returns score"
   [{:keys [n-players backshift-pos bingo]} marbles]
   (let [turn (fn [[mlist score] x]
+               (when (= 0 (mod x 100))
+                 (println "..." x))
                (if (and (pos? x) (zero? (mod x bingo)))
                  (let [player (inc (mod (dec x) n-players))]
                    [(backshift mlist backshift-pos)
@@ -96,7 +98,7 @@ Marble after the one just removed comes current")
                             (fn [n]
                               (+ (or n 0) x (nth-ccw mlist backshift-pos))))])
                  [(insert-1 mlist x) score]))]
-    (second (reduce turn [(empty-fast-mlist) nil] marbles))))
+    (second (reduce turn [(empty-mlist) nil] marbles))))
 
 (defn winner
   [n-players n-marbles]
@@ -105,4 +107,4 @@ Marble after the one just removed comes current")
        vals
        (apply max)))
 
-(defn solution-1 [] (winner 452 70784))
+(defn solution-1 [] (time (winner 452 70784)))
