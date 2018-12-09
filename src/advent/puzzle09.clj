@@ -84,13 +84,13 @@ Marble after the one just removed comes current")
       (->FastMarbleList (assoc m new-k x) new-k)))
   (backshift [_ n]
     (let [ks (vec (keys m))
-          idx (mod (- (.indexOf ks current-k) n) (count ks))
+          idx (mod (- (.indexOf ^clojure.lang.PersistentVector ks current-k) n) (count ks))
           idx-after (mod (inc idx) (count ks))]
       (->FastMarbleList (dissoc m (nth ks idx))
                         (nth ks idx-after))))
   (nth-ccw ^long [_ n]
     (let [ks (vec (keys m))]
-      (get m (nth ks (mod (- (.indexOf ks current-k) n) (count ks)))))))
+      (get m (nth ks (mod (- (.indexOf ^clojure.lang.PersistentVector ks current-k) n) (count ks)))))))
 
 (defn print-fast-mlist
   [{:keys [m current-k]}]
