@@ -68,16 +68,12 @@ Marble after the one just removed comes current")
 
 (defn find-pos
   [pos m]
-  (let [actual (if (empty? m)
-                 1.0
-                 (let [[a b c] (subseq m >= pos)]
-                   (if b
-                     (between (first b) (first (or c (first m))))
-                     (between (ffirst m) (first (or (second m) (first m)))))))
-        expected (find-pos* pos m)]
-    (when-not (= actual expected)
-      (throw (ex-info "Bad result" {:expected expected :actual actual :pos pos :m m})))
-    actual))
+  (if (empty? m)
+    1.0
+    (let [[a b c] (subseq m >= pos)]
+      (if b
+        (between (first b) (first (or c (first m))))
+        (between (ffirst m) (first (or (second m) (first m))))))))
 
 (defrecord FastMarbleList [m current-k]
   IMarbleList
