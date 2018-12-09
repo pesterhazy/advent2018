@@ -2,6 +2,7 @@
   (:require [clojure.string :as str]))
 
 (set! *unchecked-math* :warn-on-boxed)
+(set! *warn-on-reflection* true)
 
 (defprotocol IMarbleList
   (insert-1 [mlist x]
@@ -23,7 +24,7 @@ Marble after the one just removed comes current")
                cycle
                (drop 2)
                (take (count mlist)))))
-  (backshift [mlist n]
+  (backshift [mlist ^long n]
     (->> mlist
          cycle
          (drop (- (count mlist) (dec n)))
@@ -37,7 +38,7 @@ Marble after the one just removed comes current")
 ;; Implementation 2
 
 (defn between
-  [a b]
+  [^double a ^double b]
   (cond
     (< a b)
     (let [v (* 0.5 (+ a b))]
