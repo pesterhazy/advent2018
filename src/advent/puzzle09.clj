@@ -43,7 +43,6 @@ Marble after remove marble comes current"))
          (concat ps)
          (partition-all 3 1)
          (some (fn [[a b c]]
-                 (prn [a b c])
                  (cond (nil? b) (+ a 1.0)
                        (nil? c) (+ b 1.0)
                        :else (when (= a pos) (between b c))))))))
