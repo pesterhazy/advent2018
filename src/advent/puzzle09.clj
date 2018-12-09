@@ -33,7 +33,17 @@ Marble after remove marble comes current"))
 ;; -----------------
 ;; Implementation 2
 
-(defrecord FastMarbleList [m]
+(defn find-pos
+  [pos ps]
+  (case (count ps)
+    0 1.0
+    1 (+ (first ps) 1.0)
+    (->> ps
+         (partition-all 2 1)
+         (some (fn [[a b]]
+                 (if (nil? b) (+ a 1.0) (when (= a pos) (* 0.5 (+ a b)))))))))
+
+(defrecord FastMarbleList [m current-k]
   IMarbleList
   (insert-1 [_ x]
     (let [ks (keys m)
@@ -48,7 +58,7 @@ Marble after remove marble comes current"))
   (backshift [_ backshift-pos] m)
   (nth-ccw [_ n] nil))
 
-(defn empty-fast-mlist [] (->FastMarbleList (sorted-map)))
+(defn empty-fast-mlist [] (->FastMarbleList (sorted-map) nil))
 
 ;; -----------------
 
