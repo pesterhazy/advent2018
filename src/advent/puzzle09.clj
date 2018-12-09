@@ -1,30 +1,32 @@
 (ns advent.puzzle09)
 
+(defprotocol IMarbleList
+  (nth-ccw [mlist n] "Returns the marble n places before the current")
+  (insert-1
+    [mlist x]
+    "Insert a marble before the 2nd element. New marble becomes current")
+  (backshift
+    [mlist backshift-pos]
+    "Removes a marble backshift-pos marble before current.
+Marble after remove marble comes current"))
+
+(extend-type clojure.lang.PersistentVector
+  IMarbleList
+  (nth-ccw [mlist n] (nth mlist (- (count mlist) n)))
+  (insert-1 [mlist x]
+    (into [x]
+          (->> mlist
+               cycle
+               (drop 2)
+               (take (count mlist)))))
+  (backshift [mlist backshift-pos]
+    (->> mlist
+         cycle
+         (drop (- (count mlist) (dec backshift-pos)))
+         (take (dec (count mlist)))
+         vec)))
+
 (defn empty-mlist [] [])
-
-(defn nth-ccw
-  "Returns the marble n places before the current"
-  [mlist n]
-  (nth mlist (- (count mlist) n)))
-
-(defn insert-1
-  "Insert a marble before the 2nd element. New marble becomes current"
-  [mlist x]
-  (into [x]
-        (->> mlist
-             cycle
-             (drop 2)
-             (take (count mlist)))))
-
-(defn backshift
-  "Removes a marble backshift-pos marble before current. Marble after remove
-  marble comes current"
-  [mlist backshift-pos]
-  (->> mlist
-       cycle
-       (drop (- (count mlist) (dec backshift-pos)))
-       (take (dec (count mlist)))
-       vec))
 
 (defn simulate
   "Takes a sequence of marbles, returns score"
