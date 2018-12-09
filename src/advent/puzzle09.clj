@@ -36,13 +36,17 @@ Marble after the one just removed comes current")
 
 (defn between
   [a b]
-  (if (< a b)
+  (cond
+    (< a b)
     (let [v (* 0.5 (+ a b))]
       (if (< a v b) v (throw (ex-info "Invariant failed" {:a a, :b b, :v v}))))
+    (> a b)
     (let [v (+ a 1.0)]
       (if (< b a v)
         v
-        (throw (ex-info "Invariant failed" {:a a, :b b, :v v}))))))
+        (throw (ex-info "Invariant failed" {:a a, :b b, :v v}))))
+    :else
+    (+ a 1.0)))
 
 (defn find-pos
   [pos ps]
@@ -56,10 +60,24 @@ Marble after the one just removed comes current")
                        (nil? c) (+ b 1.0)
                        :else (when (= a pos) (between b c))))))))
 
+(defn find-pos*
+  [pos ps]
+  (if (empty? ps)
+    1.0
+    (loop [[x & rst :as xs] ps]
+      (cond
+        (= x pos)
+        (let [wrap-around (concat rst ps ps)]
+          (between (first wrap-around) (second wrap-around)))
+        rst
+        (recur rst)
+        :else
+        nil))))
+
 (defrecord FastMarbleList [m current-k]
   IMarbleList
   (insert-1 [_ x]
-    (let [new-k (find-pos current-k (keys m))]
+    (let [new-k (find-pos* current-k (keys m))]
       (->FastMarbleList (assoc m new-k x) new-k)))
   (backshift [_ n]
     (let [ks (vec (keys m))
@@ -98,7 +116,7 @@ Marble after the one just removed comes current")
                             (fn [n]
                               (+ (or n 0) x (nth-ccw mlist backshift-pos))))])
                  [(insert-1 mlist x) score]))]
-    (second (reduce turn [(empty-mlist) nil] marbles))))
+    (second (reduce turn [(empty-fast-mlist) nil] marbles))))
 
 (defn winner
   [n-players n-marbles]
