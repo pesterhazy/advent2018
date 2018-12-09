@@ -33,28 +33,26 @@ Marble after remove marble comes current"))
 ;; -----------------
 ;; Implementation 2
 
+(defn between [a b] (if (< a b) (* 0.5 (+ a b)) (+ a 1.0)))
+
 (defn find-pos
   [pos ps]
   (case (count ps)
     0 1.0
-    1 (+ (first ps) 1.0)
     (->> ps
-         (partition-all 2 1)
-         (some (fn [[a b]]
-                 (if (nil? b) (+ a 1.0) (when (= a pos) (* 0.5 (+ a b)))))))))
+         (concat ps)
+         (partition-all 3 1)
+         (some (fn [[a b c]]
+                 (prn [a b c])
+                 (cond (nil? b) (+ a 1.0)
+                       (nil? c) (+ b 1.0)
+                       :else (when (= a pos) (between b c))))))))
 
 (defrecord FastMarbleList [m current-k]
   IMarbleList
   (insert-1 [_ x]
-    (let [ks (keys m)
-          cnt (count ks)
-          k (case cnt
-              0 1.0
-              1 (-> ks
-                    first
-                    (+ 1.0))
-              (let [k1 (first ks) k2 (second ks)] (* (+ k1 k2) 0.5)))]
-      (->FastMarbleList (assoc m k x))))
+    (let [new-k (find-pos current-k (keys m))]
+      (->FastMarbleList (assoc m new-k x) new-k)))
   (backshift [_ backshift-pos] m)
   (nth-ccw [_ n] nil))
 
