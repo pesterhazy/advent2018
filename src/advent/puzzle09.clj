@@ -107,12 +107,12 @@ Marble after the one just removed comes current")
 
 (defn simulate
   "Takes a sequence of marbles, returns score"
-  [{:keys [^long n-players backshift-pos bingo]} marbles]
+  [{:keys [^long n-players backshift-pos ^long bingo]} marbles]
   (let [turn (fn [[mlist score] ^long x]
                (when (= 0 (mod x 100))
                  (println "..." x))
-               (if (and (pos? x) (zero? (mod x bingo)))
-                 (let [player (inc (mod (dec x) n-players))]
+               (if (and (pos? x) (zero? ^long (mod x bingo)))
+                 (let [player (inc ^long (mod (dec x) n-players))]
                    [(backshift mlist backshift-pos)
                     (update score
                             player
