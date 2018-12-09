@@ -1,4 +1,4 @@
-Day 07
+## Day 08
 
 - Failed to realize that array indices are 1-based (did not read spec closely enough)
 - When the answer is wrong, it's hard to tell if the problem is in my code or if my understanding of the problem is wrong
@@ -11,3 +11,13 @@ Conclusions
 - Use `clojure.tools.trace` more often (especially with recursive functions)
 - Keep aliases around in `~/.clojure/deps.edn` to easily add a dependency
 - Need to smooth out my REPL editor workflow. What value is CIDER actually giving me? Should I just go back to inf-clojure?
+
+## Day 09
+
+- Naive solution is too slow
+
+   ```
+   advent.puzzle09=> (time (winner 452 10000))
+   "Elapsed time: 6494.007989 msecs"
+   14259
+   ```
