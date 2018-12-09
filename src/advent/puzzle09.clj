@@ -2,7 +2,7 @@
 
 (defprotocol IMarbleList
   (insert-1 [mlist x]
-            "Insert a marble after the 1st element. New marble becomes current")
+    "Insert a marble after the 1st element. New marble becomes current")
   (backshift
     [mlist backshift-pos]
     "Removes a marble backshift-pos marble before current.
@@ -14,26 +14,24 @@ Marble after remove marble comes current")
 
 (extend-type clojure.lang.PersistentVector
   IMarbleList
-    (insert-1 [mlist x]
-      (into [x]
-            (->> mlist
-                 cycle
-                 (drop 2)
-                 (take (count mlist)))))
-    (backshift [mlist backshift-pos]
-      (->> mlist
-           cycle
-           (drop (- (count mlist) (dec backshift-pos)))
-           (take (dec (count mlist)))
-           vec))
-    (nth-ccw [mlist n] (nth mlist (- (count mlist) n))))
+  (insert-1 [mlist x]
+    (into [x]
+          (->> mlist
+               cycle
+               (drop 2)
+               (take (count mlist)))))
+  (backshift [mlist backshift-pos]
+    (->> mlist
+         cycle
+         (drop (- (count mlist) (dec backshift-pos)))
+         (take (dec (count mlist)))
+         vec))
+  (nth-ccw [mlist n] (nth mlist (- (count mlist) n))))
 
 (defn empty-mlist [] [])
 
 ;; -----------------
 ;; Implementation 2
-
-;; TODO: what if no space between floats?
 
 (defn between
   [a b]
@@ -59,12 +57,13 @@ Marble after remove marble comes current")
 
 (defrecord FastMarbleList [m current-k]
   IMarbleList
-    (insert-1 [_ x]
-      (let [new-k (find-pos current-k (keys m))]
-        (->FastMarbleList (assoc m new-k x) new-k)))
-    (backshift [_ backshift-pos] m)
-    (nth-ccw [_ n]
-      (let [ks (keys m)] (mod (- (.indexOf ks current-k) n) (count ks)))))
+  (insert-1 [_ x]
+    (let [new-k (find-pos current-k (keys m))]
+      (->FastMarbleList (assoc m new-k x) new-k)))
+  (backshift [_ backshift-pos] m)
+  (nth-ccw [_ n]
+    (let [ks (vec (keys m))]
+      (get m (nth ks (mod (- (.indexOf ks current-k) n) (count ks)))))))
 
 (defn empty-fast-mlist [] (->FastMarbleList (sorted-map) nil))
 
