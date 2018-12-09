@@ -15,7 +15,6 @@ Marble after remove marble comes current"))
 
 (extend-type clojure.lang.PersistentVector
   IMarbleList
-  (nth-ccw [mlist n] (nth mlist (- (count mlist) n)))
   (insert-1 [mlist x]
     (into [x]
           (->> mlist
@@ -27,7 +26,8 @@ Marble after remove marble comes current"))
          cycle
          (drop (- (count mlist) (dec backshift-pos)))
          (take (dec (count mlist)))
-         vec)))
+         vec))
+  (nth-ccw [mlist n] (nth mlist (- (count mlist) n))))
 
 (defn empty-mlist [] [])
 
@@ -36,9 +36,9 @@ Marble after remove marble comes current"))
 
 (defrecord FastMarbleList []
   IMarbleList
-  (nth-ccw [mlist n] nil)
   (insert-1 [mlist x] mlist)
-  (backshift [mlist backshift-pos] mlist))
+  (backshift [mlist backshift-pos] mlist)
+  (nth-ccw [mlist n] nil))
 
 (defn empty-fast-mlist [] (->FastMarbleList))
 
