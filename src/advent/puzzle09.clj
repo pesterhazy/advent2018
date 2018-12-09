@@ -51,36 +51,38 @@ Marble after the one just removed comes current")
     :else
     (+ a 1.0)))
 
-(defn find-pos
-  [pos ps]
-  (case (count ps)
-    0 1.0
-    (->> ps
-         (concat ps)
-         (partition-all 3 1)
-         (some (fn [[^double a ^double b ^double c]]
-                 (cond (nil? b) (+ a 1.0)
-                       (nil? c) (+ b 1.0)
-                       :else (when (= a pos) (between b c))))))))
-
 (defn find-pos*
-  [pos ps]
-  (if (empty? ps)
-    1.0
-    (loop [[x & rst :as xs] ps]
-      (cond
-        (= x pos)
-        (let [wrap-around (concat rst ps ps)]
-          (between (first wrap-around) (second wrap-around)))
-        rst
-        (recur rst)
-        :else
-        nil))))
+  [pos m]
+  (let [ps (keys m)]
+    (if (empty? ps)
+      1.0
+      (loop [[x & rst :as xs] ps]
+        (cond
+          (= x pos)
+          (let [wrap-around (concat rst ps ps)]
+            (between (first wrap-around) (second wrap-around)))
+          rst
+          (recur rst)
+          :else
+          nil)))))
+
+(defn find-pos
+  [pos m]
+  (let [actual (if (empty? m)
+                 1.0
+                 (let [[a b c] (subseq m >= pos)]
+                   (if b
+                     (between (first b) (first (or c (first m))))
+                     (between (ffirst m) (first (or (second m) (first m)))))))
+        expected (find-pos* pos m)]
+    (when-not (= actual expected)
+      (throw (ex-info "Bad result" {:expected expected :actual actual :pos pos :m m})))
+    actual))
 
 (defrecord FastMarbleList [m current-k]
   IMarbleList
   (insert-1 [_ x]
-    (let [new-k (find-pos* current-k (keys m))]
+    (let [new-k (find-pos current-k m)]
       (->FastMarbleList (assoc m new-k x) new-k)))
   (backshift [_ n]
     (let [ks (vec (keys m))
@@ -99,7 +101,8 @@ Marble after the one just removed comes current")
               (if (= k current-k)
                 (str "(" v ")")
                 (str v))))
-       (str/join " ")))
+       (str/join " ")
+       println))
 
 (defn empty-fast-mlist [] (->FastMarbleList (sorted-map) nil))
 
