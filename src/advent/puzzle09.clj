@@ -10,6 +10,9 @@
     "Removes a marble backshift-pos marble before current.
 Marble after remove marble comes current"))
 
+;; -----------------
+;; Implementation 1: vector
+
 (extend-type clojure.lang.PersistentVector
   IMarbleList
   (nth-ccw [mlist n] (nth mlist (- (count mlist) n)))
@@ -28,6 +31,19 @@ Marble after remove marble comes current"))
 
 (defn empty-mlist [] [])
 
+;; -----------------
+;; Implementation 2
+
+(defrecord FastMarbleList []
+  IMarbleList
+  (nth-ccw [mlist n] nil)
+  (insert-1 [mlist x] mlist)
+  (backshift [mlist backshift-pos] mlist))
+
+(defn empty-fast-mlist [] (->FastMarbleList))
+
+;; -----------------
+
 (defn simulate
   "Takes a sequence of marbles, returns score"
   [{:keys [n-players backshift-pos bingo]} marbles]
@@ -40,7 +56,7 @@ Marble after remove marble comes current"))
                             (fn [n]
                               (+ (or n 0) x (nth-ccw mlist backshift-pos))))])
                  [(insert-1 mlist x) score]))]
-    (second (reduce turn [(empty-mlist) nil] marbles))))
+    (second (reduce turn [(empty-fast-mlist) nil] marbles))))
 
 (defn winner
   [n-players n-marbles]
