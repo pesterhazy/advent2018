@@ -1,6 +1,8 @@
 (ns advent.puzzle09
   (:require [clojure.string :as str]))
 
+(set! *unchecked-math* :warn-on-boxed)
+
 (defprotocol IMarbleList
   (insert-1 [mlist x]
     "Insert a marble after the 1st element. New marble becomes current")
@@ -8,7 +10,7 @@
     [mlist n]
     "Removes a marble n marble before current.
 Marble after the one just removed comes current")
-  (nth-ccw [mlist n] "Returns the marble n places before the current"))
+  (nth-ccw ^long [mlist n] "Returns the marble n places before the current"))
 
 ;; -----------------
 ;; Implementation 1: vector
@@ -27,7 +29,7 @@ Marble after the one just removed comes current")
          (drop (- (count mlist) (dec n)))
          (take (dec (count mlist)))
          vec))
-  (nth-ccw [mlist n] (nth mlist (- (count mlist) n))))
+  (nth-ccw ^long [mlist n] (nth mlist (- (count mlist) n))))
 
 (defn empty-mlist [] [])
 
@@ -85,7 +87,7 @@ Marble after the one just removed comes current")
           idx-after (mod (inc idx) (count ks))]
       (->FastMarbleList (dissoc m (nth ks idx))
                         (nth ks idx-after))))
-  (nth-ccw [_ n]
+  (nth-ccw ^long [_ n]
     (let [ks (vec (keys m))]
       (get m (nth ks (mod (- (.indexOf ks current-k) n) (count ks)))))))
 
@@ -104,8 +106,8 @@ Marble after the one just removed comes current")
 
 (defn simulate
   "Takes a sequence of marbles, returns score"
-  [{:keys [n-players backshift-pos bingo]} marbles]
-  (let [turn (fn [[mlist score] x]
+  [{:keys [^long n-players backshift-pos bingo]} marbles]
+  (let [turn (fn [[mlist score] ^long x]
                (when (= 0 (mod x 100))
                  (println "..." x))
                (if (and (pos? x) (zero? (mod x bingo)))
@@ -113,13 +115,13 @@ Marble after the one just removed comes current")
                    [(backshift mlist backshift-pos)
                     (update score
                             player
-                            (fn [n]
+                            (fn [^long n]
                               (+ (or n 0) x (nth-ccw mlist backshift-pos))))])
                  [(insert-1 mlist x) score]))]
     (second (reduce turn [(empty-fast-mlist) nil] marbles))))
 
 (defn winner
-  [n-players n-marbles]
+  [n-players ^long n-marbles]
   (->> (range 0 (inc n-marbles))
        (simulate {:backshift-pos 7, :bingo 23, :n-players n-players})
        vals
