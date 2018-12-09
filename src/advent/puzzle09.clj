@@ -81,13 +81,10 @@ Returns pair: [updated-nlist found-marble]"))
     (let [new-k (find-pos current-k m)]
       (->FastMarbleList (assoc m new-k x) new-k)))
   (backshift [_ n]
-    [(let [ks (vec (keys m))
-           idx ^long (mod ^long (- ^int (.indexOf ^clojure.lang.PersistentVector ks current-k) ^long n) ^long (count ks))
-           idx-after (mod (inc ^long idx) (count ks))]
-       (->FastMarbleList (dissoc m (nth ks idx))
-                         (nth ks idx-after)))
-     (let [ks (vec (keys m))]
-       (get m (nth ks (mod (- (.indexOf ^clojure.lang.PersistentVector ks current-k) ^long n) (count ks)))))]))
+    (let [wrap-around (concat (rsubseq m < current-k) (rseq m))
+          [a b] (->> wrap-around (drop 5))]
+      [(->FastMarbleList (dissoc m (first b)) (first a))
+       (second b)])))
 
 (defn print-fast-mlist
   [{:keys [m current-k]}]
@@ -107,7 +104,7 @@ Returns pair: [updated-nlist found-marble]"))
   "Takes a sequence of marbles, returns score"
   [{:keys [^long n-players ^long backshift-pos ^long bingo]} marbles]
   (let [turn (fn [[mlist score] ^long x]
-               (when (= 0 (mod x 1000))
+               (when (= 0 (mod x 100000))
                  (println "..." x))
                (if (and (pos? x) (zero? ^long (mod x bingo)))
                  (let [player (inc ^long (mod (dec x) n-players))
@@ -130,3 +127,4 @@ Returns pair: [updated-nlist found-marble]"))
        (apply max)))
 
 (defn solution-1 [] (time (winner 452 70784)))
+(defn solution-2 [] (time (winner 452 (* 100 70784))))
