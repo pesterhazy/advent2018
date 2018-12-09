@@ -36,7 +36,7 @@
 (defn winner
   [n-players n-marbles]
   (->> (range 1 (inc n-marbles))
-       (simulate {:backshift 7, :bingo 23, :n-players n-players})
+       (simulate {:backshift-pos 7, :bingo 23, :n-players n-players})
        vals
        (apply max)))
 
