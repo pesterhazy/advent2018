@@ -11,7 +11,7 @@
     [mlist n]
     "Removes a marble n marble before current.
 Marble after the one just removed comes current")
-  (nth-ccw ^long [mlist n] "Returns the marble n places before the current"))
+  (nth-ccw [mlist n] "Returns the marble n places before the current"))
 
 ;; -----------------
 ;; Implementation 1: vector
@@ -30,7 +30,7 @@ Marble after the one just removed comes current")
          (drop (- (count mlist) (dec n)))
          (take (dec (count mlist)))
          vec))
-  (nth-ccw ^long [mlist n] (nth mlist (- ^int (count mlist) ^long n))))
+  (nth-ccw [mlist n] (nth mlist (- ^int (count mlist) ^long n))))
 
 (defn empty-mlist [] [])
 
@@ -88,7 +88,7 @@ Marble after the one just removed comes current")
           idx-after (mod (inc ^long idx) (count ks))]
       (->FastMarbleList (dissoc m (nth ks idx))
                         (nth ks idx-after))))
-  (nth-ccw ^long [_ n]
+  (nth-ccw [_ n]
     (let [ks (vec (keys m))]
       (get m (nth ks (mod (- (.indexOf ^clojure.lang.PersistentVector ks current-k) ^long n) (count ks)))))))
 
@@ -116,8 +116,10 @@ Marble after the one just removed comes current")
                    [(backshift mlist backshift-pos)
                     (update score
                             player
-                            (fn [^long n]
-                              (+ (or n 0) x (nth-ccw mlist backshift-pos))))])
+                            (fn [n]
+                              (if n
+                                (+ ^long n x ^long (nth-ccw mlist backshift-pos))
+                                (+ x ^long (nth-ccw mlist backshift-pos)))))])
                  [(insert-1 mlist x) score]))]
     (second (reduce turn [(empty-fast-mlist) nil] marbles))))
 
