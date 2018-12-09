@@ -9,9 +9,9 @@
     "Insert a marble after the 1st element. New marble becomes current")
   (backshift
     [mlist n]
-    "Removes a marble n marble before current.
-Marble after the one just removed comes current")
-  (nth-ccw [mlist n] "Returns the marble n places before the current"))
+    "Removes a marble n marble before current. Marble after the one just removed comes current
+
+Returns pair: [updated-nlist found-marble]"))
 
 ;; -----------------
 ;; Implementation 1: vector
@@ -25,12 +25,12 @@ Marble after the one just removed comes current")
                (drop 2)
                (take (count mlist)))))
   (backshift [mlist ^long n]
-    (->> mlist
-         cycle
-         (drop (- (count mlist) (dec n)))
-         (take (dec (count mlist)))
-         vec))
-  (nth-ccw [mlist n] (nth mlist (- ^int (count mlist) ^long n))))
+    [(->> mlist
+          cycle
+          (drop (- (count mlist) (dec n)))
+          (take (dec (count mlist)))
+          vec)
+     (nth mlist (- ^int (count mlist) n))]))
 
 (defn empty-mlist [] [])
 
@@ -81,14 +81,13 @@ Marble after the one just removed comes current")
     (let [new-k (find-pos current-k m)]
       (->FastMarbleList (assoc m new-k x) new-k)))
   (backshift [_ n]
-    (let [ks (vec (keys m))
-          idx ^long (mod ^long (- ^int (.indexOf ^clojure.lang.PersistentVector ks current-k) ^long n) ^long (count ks))
-          idx-after (mod (inc ^long idx) (count ks))]
-      (->FastMarbleList (dissoc m (nth ks idx))
-                        (nth ks idx-after))))
-  (nth-ccw [_ n]
-    (let [ks (vec (keys m))]
-      (get m (nth ks (mod (- (.indexOf ^clojure.lang.PersistentVector ks current-k) ^long n) (count ks)))))))
+    [(let [ks (vec (keys m))
+           idx ^long (mod ^long (- ^int (.indexOf ^clojure.lang.PersistentVector ks current-k) ^long n) ^long (count ks))
+           idx-after (mod (inc ^long idx) (count ks))]
+       (->FastMarbleList (dissoc m (nth ks idx))
+                         (nth ks idx-after)))
+     (let [ks (vec (keys m))]
+       (get m (nth ks (mod (- (.indexOf ^clojure.lang.PersistentVector ks current-k) ^long n) (count ks)))))]))
 
 (defn print-fast-mlist
   [{:keys [m current-k]}]
@@ -111,14 +110,15 @@ Marble after the one just removed comes current")
                (when (= 0 (mod x 1000))
                  (println "..." x))
                (if (and (pos? x) (zero? ^long (mod x bingo)))
-                 (let [player (inc ^long (mod (dec x) n-players))]
-                   [(backshift mlist backshift-pos)
+                 (let [player (inc ^long (mod (dec x) n-players))
+                       [new-mlist marble] (backshift mlist backshift-pos)]
+                   [new-mlist
                     (update score
                             player
                             (fn [n]
                               (if n
-                                (+ ^long n x ^long (nth-ccw mlist backshift-pos))
-                                (+ x ^long (nth-ccw mlist backshift-pos)))))])
+                                (+ ^long n x ^long marble)
+                                (+ x ^long marble))))])
                  [(insert-1 mlist x) score]))]
     (second (reduce turn [(empty-fast-mlist) nil] marbles))))
 
