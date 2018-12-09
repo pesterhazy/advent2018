@@ -2,7 +2,8 @@
 
 (defn nth-ccw [xs n] (nth xs (- (count xs) n)))
 
-(defn game
+(defn simulate
+  "Takes a sequence of marbles, returns score"
   [{:keys [n-players backshift bingo]} marbles]
   (let [turn (fn [[xs score] x]
                (if (zero? (mod x bingo))
@@ -22,9 +23,11 @@
                              (take (count xs)))) score]))]
     (second (reduce turn [[1] nil] marbles))))
 
-(defn solution-1
-  []
-  (->> (range 1 (inc 70784))
-       (game {:backshift 7, :bingo 23, :n-players 452})
+(defn winner
+  [n-players n-marbles]
+  (->> (range 1 (inc n-marbles))
+       (game {:backshift 7, :bingo 23, :n-players n-players})
        vals
        (apply max)))
+
+(defn solution-1 [] (winner 452 70784))
