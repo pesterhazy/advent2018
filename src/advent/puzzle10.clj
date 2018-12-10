@@ -36,6 +36,13 @@
                       :x (+ x delta-x)
                       :y (+ y delta-y))))))
 
+(def max-size 100)
+
+(defn small-enough?
+  [[[x-start x-end] [y-start y-end]]]
+  (and (< (Math/abs (- x-end x-start)) max-size)
+       (< (Math/abs (- y-end y-start)) max-size)))
+
 (defn print-grid
   [bounding-box points]
   (let [[[x-start x-end] [y-start y-end]] bounding-box
@@ -52,8 +59,13 @@
   []
   (let [initial-points (->> (read-sample)
                             (mapv parse))
-        bounding-box (measure initial-points)]
-    (->> initial-points
+        points (->> initial-points
+                    (iterate transform)
+                    #_(drop-while (fn [points]
+                                    (not (small-enough? (measure points)))))
+                    first)
+        bounding-box (measure points)]
+    (->> points
          (iterate transform)
-         (take 4)
+         (take 6)
          (run! (partial print-grid bounding-box)))))
