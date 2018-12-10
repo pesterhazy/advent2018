@@ -36,7 +36,7 @@
                       :x (+ x delta-x)
                       :y (+ y delta-y))))))
 
-(def max-size 100)
+(def max-size 80)
 
 (defn small-enough?
   [[[x-start x-end] [y-start y-end]]]
