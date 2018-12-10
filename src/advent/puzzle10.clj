@@ -28,6 +28,14 @@
   (->> [(map :x tg) (map :y tg)]
        (mapv (juxt (partial apply min) (partial apply max)))))
 
+(defn transform
+  [points]
+  (->> points
+       (mapv (fn [{:keys [x y delta-x delta-y], :as point}]
+               (assoc point
+                      :x (+ x delta-x)
+                      :y (+ y delta-y))))))
+
 (defn print-grid
   [points]
   (let [[[x-start x-end] [y-start y-end]] (measure points)
@@ -37,4 +45,5 @@
       (->> (range x-start (inc x-end))
            (map (fn [x] (if (grid {:x x, :y y}) "*" ".")))
            (str/join)
-           println))))
+           println))
+    (println)))
