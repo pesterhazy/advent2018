@@ -43,8 +43,15 @@
   (and (< (Math/abs (- x-end x-start)) max-size)
        (< (Math/abs (- y-end y-start)) max-size)))
 
+(defn fingerprint
+  [points]
+  (->> points
+       (map (fn [{:keys [x y]}] (+ x (* 99 y))))
+       (apply +)))
+
 (defn print-grid
   [bounding-box points]
+  (println (fingerprint points))
   (let [[[x-start x-end] [y-start y-end]] bounding-box
         grid (-> points
                  (clojure.set/index [:x :y]))]
@@ -69,3 +76,16 @@
          (iterate transform)
          (take 6)
          (run! (partial print-grid bounding-box)))))
+
+;; Determined visually from solution-1
+
+(def solution-fingerprint 3910753)
+
+(defn solution-2 []
+  (let [initial-points (->> (read-input)
+                            (mapv parse))]
+    (->> initial-points
+         (iterate transform)
+         (take-while (fn [points]
+                       (not= (fingerprint points) solution-fingerprint)))
+         count)))
