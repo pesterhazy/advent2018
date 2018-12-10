@@ -57,12 +57,12 @@
 
 (defn solution-1
   []
-  (let [initial-points (->> (read-sample)
+  (let [initial-points (->> (read-input)
                             (mapv parse))
         points (->> initial-points
                     (iterate transform)
-                    #_(drop-while (fn [points]
-                                    (not (small-enough? (measure points)))))
+                    (drop-while (fn [points]
+                                  (not (small-enough? (measure points)))))
                     first)
         bounding-box (measure points)]
     (->> points
