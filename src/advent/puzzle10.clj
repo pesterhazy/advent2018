@@ -25,7 +25,7 @@
 
 (defn measure
   [points]
-  (->> [(map :x tg) (map :y tg)]
+  (->> [(map :x points) (map :y points)]
        (mapv (juxt (partial apply min) (partial apply max)))))
 
 (defn transform
@@ -37,8 +37,8 @@
                       :y (+ y delta-y))))))
 
 (defn print-grid
-  [points]
-  (let [[[x-start x-end] [y-start y-end]] (measure points)
+  [bounding-box points]
+  (let [[[x-start x-end] [y-start y-end]] bounding-box
         grid (-> points
                  (clojure.set/index [:x :y]))]
     (doseq [y (range y-start (inc y-end))]
@@ -47,3 +47,13 @@
            (str/join)
            println))
     (println)))
+
+(defn solution-1
+  []
+  (let [initial-points (->> (read-sample)
+                            (mapv parse))
+        bounding-box (measure initial-points)]
+    (->> initial-points
+         (iterate transform)
+         (take 4)
+         (run! (partial print-grid bounding-box)))))
