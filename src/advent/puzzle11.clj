@@ -36,11 +36,11 @@
        (apply max-key second)
        first))
 
-(defn evaluate-square ^long [^long size ^long x ^long y]
-  (->> (for [y* (range y (+ y size))
-             x* (range x (+ x size))]
-         (->level grid-sn x* y*))
-       (reduce +)))
+#_(defn evaluate-square ^long [^long size ^long x ^long y]
+    (->> (for [y* (range y (+ y size))
+               x* (range x (+ x size))]
+           (->level grid-sn x* y*))
+         (reduce +)))
 
 (defn inner ^long [^long size ^long x ^long y*]
   (loop [result 0
@@ -50,7 +50,7 @@
              (inc x*))
       result)))
 
-(defn evaluate-square* ^long [^long size ^long x ^long y]
+(defn evaluate-square ^long [^long size ^long x ^long y]
   (loop [result 0
          y* y]
     (if (< y* (+ y size))
@@ -63,7 +63,7 @@
              x (range (- ^long width size))]
          [x y])
        (reduce (fn [[acc-v acc-xy :as acc] [x y]]
-                 (let [new-v (evaluate-square* size x y)]
+                 (let [new-v (evaluate-square size x y)]
                    (if (> new-v ^long acc-v)
                      [new-v [x y]]
                      acc))))))
