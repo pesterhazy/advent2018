@@ -14,21 +14,24 @@
 (def width 300)
 (def height 300)
 
-(defn gen-blocks ^long [^long size]
-  (->> (for [y (range (- ^long height size))
-             x (range (- ^long width size))]
-         [[x y]
-          (for [y* (range y (+ ^long y size))
-                x* (range x (+ ^long x size))]
-            [x* y*])])
-       (into {})))
+(defn gen-blocks [^long size]
+  (for [y (range (- ^long height size))
+        x (range (- ^long width size))]
+    [[x y]
+     (for [y* (range y (+ ^long y size))
+           x* (range x (+ ^long x size))]
+       [x* y*])]))
+
+(defn evaluate [blocks]
+  (map (fn [[k pairs]]
+         [k
+          (->> pairs
+               (map (fn [pair] (apply ->level grid-sn pair)))
+               (apply +))])
+       blocks))
 
 (defn solution-1 [blocks]
   (->> blocks
-       (map (fn [[k pairs]]
-              [k
-               (->> pairs
-                    (map (fn [pair] (apply ->level grid-sn pair)))
-                    (apply +))]))
+       evaluate
        (apply max-key second)
        first))
