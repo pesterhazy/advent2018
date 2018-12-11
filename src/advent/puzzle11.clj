@@ -14,12 +14,12 @@
 (def width 300)
 (def height 300)
 
-(defn gen-blocks []
-  (->> (for [y (range (- ^long height 3))
-             x (range (- ^long width 3))]
+(defn gen-blocks ^long [^long size]
+  (->> (for [y (range (- ^long height size))
+             x (range (- ^long width size))]
          [[x y]
-          (for [y* (range y (+ ^long y 3))
-                x* (range x (+ ^long x 3))]
+          (for [y* (range y (+ ^long y size))
+                x* (range x (+ ^long x size))]
             [x* y*])])
        (into {})))
 
