@@ -37,39 +37,11 @@
        (apply max-key second)
        first))
 
-#_(defn evaluate-square ^long [^long size ^long x ^long y]
-    (->> (for [y* (range y (+ y size))
-               x* (range x (+ x size))]
-           (->level x* y*))
-         (reduce +)))
+(defn hblocks
+  "Returns all horizontal blocks for a given size
 
-(defn inner ^long [^long size ^long x ^long y*]
-  (loop [result 0
-         x* x]
-    (if (< x* (+ x size))
-      (recur (+ result (->level x* y*))
-             (inc x*))
-      result)))
-
-(defn evaluate-square ^long [^long size ^long x ^long y]
-  (loop [result 0
-         y* y]
-    (if (< y* (+ y size))
-      (recur (+ result (inner size x y*))
-             (inc y*))
-      result)))
-
-(defn evaluate-size [^long size]
-  (->> (for [y (range (- ^long height size))
-             x (range (- ^long width size))]
-         [x y])
-       (reduce (fn [[acc-v acc-xy :as acc] [x y]]
-                 (let [new-v (evaluate-square size x y)]
-                   (if (> new-v ^long acc-v)
-                     [new-v [x y]]
-                     acc))))))
-
-(defn hblocks [^long size]
+  An hblock has a vertical extension of 1 block"
+  [^long size]
   (mapcat (fn [^long y]
             (map (fn [^long x]
                    [[x y size] (->> (range x (+ x size)) (reduce (fn ^long [^long acc ^long x*] (+ acc (->level x* y))) 0))])
@@ -93,11 +65,3 @@
                  (apply +))
             [x y size]])
          (apply max-key first))))
-
-#_(defn solution-2 []
-    (->> (range 3 100)
-         (map (fn [size]
-                (println size)
-                [size
-                 (time (evaluate-size size))]))
-         doall))
