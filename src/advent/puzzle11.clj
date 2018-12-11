@@ -30,8 +30,24 @@
                (apply +))])
        blocks))
 
-(defn solution-1 [blocks]
-  (->> blocks
+(defn solution-1 []
+  (->> (gen-blocks 3)
        evaluate
        (apply max-key second)
        first))
+
+(defn solution-2 []
+  (->> (range 3 100)
+       (partition-all 4)
+       (mapcat (fn [sizes]
+                 (pmap (fn [size]
+                         (println size)
+                         (when size
+                           [size
+                            (->> (gen-blocks size)
+                                 evaluate
+                                 (apply max-key second)
+                                 first
+                                 time)]))
+                       sizes)))
+       doall))
