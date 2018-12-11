@@ -48,7 +48,10 @@
                  (+ acc
                     (->> (range x (+ x size))
                          (reduce (fn [^long acc ^long x*]
-                                   (+ acc ^long (->level grid-sn x* y*))) 0)))) 0)))
+                                   (+ acc ^long
+                                      (->level grid-sn x* y*)))
+                                 0))))
+               0)))
 
 (defn evaluate-size [^long size]
   (->> (for [y (range (- ^long height size))
