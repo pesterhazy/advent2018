@@ -36,6 +36,20 @@
        (apply max-key second)
        first))
 
+(defn evaluate-size [^long size]
+  (->> (for [y (range (- ^long height size))
+             x (range (- ^long width size))]
+         [x y])
+       (reduce (fn [[acc-v acc-xy :as acc] [x y]]
+                 (let [new-v
+                       (->> (for [y* (range y (+ ^long y size))
+                                  x* (range x (+ ^long x size))]
+                              (->level grid-sn x* y*))
+                            (reduce +))]
+                   (if (> ^long new-v ^long acc-v)
+                     [new-v [x y]]
+                     acc))))))
+
 (defn solution-2 []
   (->> (range 3 100)
        (partition-all 4)
@@ -44,10 +58,7 @@
                          (println size)
                          (when size
                            [size
-                            (->> (gen-blocks size)
-                                 evaluate
-                                 (apply max-key second)
-                                 first
-                                 time)]))
+                            (evaluate-size size)
+                            ]))
                        sizes)))
        doall))
