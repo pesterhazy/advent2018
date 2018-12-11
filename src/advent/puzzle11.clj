@@ -12,8 +12,8 @@
   (- (hun (* (+ x 10) (+ (* y (+ x 10)) ^long grid-sn))) 5))
 
 (def max-square-size 100)
-(def width 100) ;; fixme
-(def height 100) ;; fixme
+(def width 300)
+(def height 300)
 
 (defn gen-blocks [^long size]
   (for [y (range (- ^long height size))
@@ -79,11 +79,12 @@
 (defn all-hblocks []
   (->> (range 1 (inc ^long max-square-size))
        (reduce (fn [acc size]
+                 (println size)
                  (into acc (hblocks size)))
                {})))
 
 (defn solution-2 []
-  (let [hblock->v (all-hblocks)]
+  (let [hblock->v (time (all-hblocks))]
     (->> (for [size (range 1 (inc ^long max-square-size))
                x (range 0 (- ^long width ^long size))
                y (range 0 (- ^long height ^long size))]
