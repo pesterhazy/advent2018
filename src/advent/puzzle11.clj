@@ -42,16 +42,21 @@
          (->level grid-sn x* y*))
        (reduce +)))
 
+(defn inner ^long [^long size ^long x ^long y*]
+  (loop [result 0
+         x* x]
+    (if (< x* (+ x size))
+      (recur (+ result (->level grid-sn x* y*))
+             (inc x*))
+      result)))
+
 (defn evaluate-square* ^long [^long size ^long x ^long y]
-  (->> (range y (+ y size))
-       (reduce (fn [^long acc ^long y*]
-                 (+ acc
-                    (->> (range x (+ x size))
-                         (reduce (fn [^long acc ^long x*]
-                                   (+ acc ^long
-                                      (->level grid-sn x* y*)))
-                                 0))))
-               0)))
+  (loop [result 0
+         y* y]
+    (if (< y* (+ y size))
+      (recur (+ result (inner size x y*))
+             (inc y*))
+      result)))
 
 (defn evaluate-size [^long size]
   (->> (for [y (range (- ^long height size))
@@ -65,13 +70,8 @@
 
 (defn solution-2 []
   (->> (range 3 100)
-       (partition-all 4)
-       (mapcat (fn [sizes]
-                 (pmap (fn [size]
-                         (println size)
-                         (when size
-                           [size
-                            (evaluate-size size)
-                            ]))
-                       sizes)))
+       (map (fn [size]
+              (println size)
+              [size
+               (time (evaluate-size size))]))
        doall))
