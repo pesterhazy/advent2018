@@ -12,6 +12,12 @@
                     clojure.java.io/reader)]
     (vec (line-seq f))))
 
+(defn read-input
+  []
+  (with-open [f (-> "12/input.txt"
+                    clojure.java.io/reader)]
+    (vec (line-seq f))))
+
 (defn s->bitset
   [s]
   (let [bs (BitSet. (count s))]
@@ -104,5 +110,5 @@
 (defn generations [ctx] (iterate #(next-gen ctx %) [0 (:initial-state ctx)]))
 
 (defn solution-1 []
-  (let [gens (->> (read-sample) parse generations)]
+  (let [gens (->> (read-input) parse generations)]
     (apply calc (nth gens 20))))
