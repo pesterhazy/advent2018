@@ -1,8 +1,15 @@
-(ns advent.puzzle13)
+(ns advent.puzzle13
+  (:require [clojure.string :as str]))
 
 (defn read-sample
   []
   (with-open [f (-> "13/sample.txt"
+                    clojure.java.io/reader)]
+    (vec (line-seq f))))
+
+(defn read-input
+  []
+  (with-open [f (-> "13/input.txt"
                     clojure.java.io/reader)]
     (vec (line-seq f))))
 
@@ -74,8 +81,9 @@
                               (cart->line point point)))))))
 
 (defn solution-1 []
-  (let [graph (read-sample)
+  (let [graph (read-input)
         generations (iterate (partial tick graph) (find-carts graph))]
-    (some (fn [generation]
-            (some :collision (vals generation)))
-          generations)))
+    (->> (some (fn [generation]
+                 (some :collision (vals generation)))
+               generations)
+         (str/join ","))))
