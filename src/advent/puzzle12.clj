@@ -122,17 +122,7 @@
     (apply calc (nth gens 20))))
 
 (defn solution-2 []
-  #_(let [gens (->> (read-input) parse generations)
-          v (apply calc (nth gens 20))]
-      (prn v)
-      )
-  (let [gens (->> (read-input) parse generations)]
-    (reduce (fn [[seen? ^long idx] [offset bs]]
-              (let [v (calc offset bs)]
-                (when (= 0 (mod idx 100))
-                  (prn idx v))
-                (if (seen? v)
-                  (reduced [idx (seen? v)])
-                  [(assoc seen? v idx) (inc idx)])))
-            [{} 0]
-            gens)))
+  ;; derived from plotting value and
+  ;; guessing the linear function
+
+  (+ 17549 (* 86 (- 50000000000 200))))
