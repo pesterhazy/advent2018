@@ -25,8 +25,7 @@
   ([s length]
    (->> (range length)
         (map (fn [idx] (if (.get s idx) \# \.)))
-        (str/join)))
-  )
+        (str/join))))
 
 (def regex #"initial state: (.+)")
 
@@ -53,22 +52,28 @@
                           (map parse-body-line)
                           (into {})))))
 
-(defn sub-bitset [bs from to]
+(defn sub-bitset
+  [bs from to]
   (let [new-bs (BitSet.)]
     (doseq [[new-idx old-idx] (map-indexed vector (range from to))]
-      (.set new-bs new-idx (if (neg? old-idx)
-                             false
-                             (.get bs old-idx))))
+      (.set new-bs new-idx (if (neg? old-idx) false (.get bs old-idx))))
     new-bs))
 
+(defn bs->long
+  [bs]
+  (-> bs
+      .toLongArray
+      first))
+
 (defn next-gen
-  [ctx bs]
-  (doseq [idx (range (- padding) (:length ctx))]
-    (let [v (if (neg? idx) false (.get bs idx))]
-      (println (format "%3d" idx) (bitset->s (sub-bitset bs
-                                                         (- idx padding)
-                                                         (+ idx padding 1))
-                                             blength))))
-  bs)
+  [{:keys [lookup length]} bs]
+  (let [new-bs (BitSet.)]
+    (doseq [idx (range (- padding) length)]
+      (let [v (get lookup
+                   (bs->long (sub-bitset bs (- idx padding) (+ idx padding 1)))
+                   false)]
+        (when-not (neg? idx)
+          (.set new-bs idx v))))
+    new-bs))
 
 (defn generations [ctx] (iterate #(next-gen ctx %) (:initial-state ctx)))
