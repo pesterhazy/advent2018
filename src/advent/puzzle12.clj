@@ -104,11 +104,28 @@
 
 (defn print-gen
   [[num [offset bs]]]
-  (println (format "%2d" num)
-           (str (apply str (repeat (+ padding offset) ".")) (bitset->s bs))))
+  (println (format "%3d" num)
+           (str (apply str (repeat (+ padding offset) ".")) (bitset->s bs))
+           (calc offset bs)))
 
 (defn generations [ctx] (iterate #(next-gen ctx %) [0 (:initial-state ctx)]))
 
 (defn solution-1 []
   (let [gens (->> (read-input) parse generations)]
     (apply calc (nth gens 20))))
+
+(defn solution-2 []
+  #_(let [gens (->> (read-input) parse generations)
+          v (apply calc (nth gens 20))]
+      (prn v)
+      )
+  (let [gens (->> (read-input) parse generations)]
+    (reduce (fn [[seen? idx] [offset bs]]
+              (let [v (calc offset bs)]
+                (when (= 0 (mod idx 100))
+                  (prn idx v))
+                (if (seen? v)
+                  (reduced [idx (seen? v)])
+                  [(assoc seen? v idx) (inc idx)])))
+            [{} 0]
+            gens)))
