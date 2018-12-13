@@ -82,9 +82,6 @@
   (let [new-bs (BitSet.)
         vs (->> (range (- 0 ^long neighbors offset) (+ (.length bs) 2))
                 (map (fn [^long idx]
-                       (prn [:lala (sub-bitset bs
-                                               (- idx ^long neighbors)
-                                               (+ idx ^long neighbors 1))])
                        (get lookup
                             (bs->long (sub-bitset bs
                                                   (- idx ^long neighbors)
