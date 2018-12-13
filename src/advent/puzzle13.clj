@@ -55,15 +55,15 @@
           \< [y (dec x)]
           \> [y (inc x)])
         point (point-in graph new-x new-y)
-        ky [sym point]
         new-cart (case point
                    (\| \-)
                    cart
                    \+
                    {:n-turns (inc n-turns)
                     :sym (rotate sym n-turns)}
+                   (\\ \/)
                    {:n-turns n-turns
-                    :sym (case ky
+                    :sym (case [sym point]
                            [\> \\] \v
                            [\> \/] \^
                            [\< \\] \^
@@ -80,7 +80,7 @@
                  (let [[yx m :as new-cart] (transform-cart graph cart)]
                    (if (acc-carts yx)
                      (do
-                       (prn [:collision new-cart])
+                       (prn [:collision yx m (acc-carts yx)])
                        (if remove?
                          (dissoc acc-carts yx)
                          (conj acc-carts [yx (assoc m :collision yx)])))
