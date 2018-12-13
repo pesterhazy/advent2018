@@ -28,13 +28,13 @@
     bs))
 
 (defn bitset->s
-  ([^String s]
-   (->> (range (.length s))
-        (map (fn [idx] (if (.get s idx) \# \.)))
+  ([^BitSet bs]
+   (->> (range (.length bs))
+        (map (fn [^long idx] (if (.get bs idx) \# \.)))
         (str/join)))
-  ([s length]
+  ([^BitSet bs ^long length]
    (->> (range length)
-        (map (fn [idx] (if (.get s idx) \# \.)))
+        (map (fn [^long idx] (if (.get bs idx) \# \.)))
         (str/join))))
 
 (def regex #"initial state: (.+)")
@@ -75,22 +75,23 @@
 
 (defn ^long bs->long
   [^BitSet bs]
-  (-> bs
-      .toLongArray
-      first))
+  (or (some-> bs .toLongArray first) 0))
 
 (defn next-gen
   [{:keys [lookup]} [^long offset ^BitSet bs]]
   (let [new-bs (BitSet.)
         vs (->> (range (- 0 ^long neighbors offset) (+ (.length bs) 2))
                 (map (fn [^long idx]
+                       (prn [:lala (sub-bitset bs
+                                               (- idx ^long neighbors)
+                                               (+ idx ^long neighbors 1))])
                        (get lookup
                             (bs->long (sub-bitset bs
                                                   (- idx ^long neighbors)
                                                   (+ idx ^long neighbors 1)))
                             false))))
         [a b] (split-with false? vs)]
-    (doseq [[idx v] (map-indexed vector b)] (.set new-bs ^long idx ^long v))
+    (doseq [[idx v] (map-indexed vector b)] (.set new-bs ^long idx ^boolean v))
     [(- (count a) ^long neighbors) new-bs]))
 
 (defn bit-seq
@@ -106,7 +107,9 @@
             (bit-seq bs (inc idx)))))))
 
 (defn calc [^long offset ^BitSet bs]
-  (+ ^long (->> bs bit-seq (reduce +)) ^long (* offset (.cardinality bs))))
+  (let [a (long (apply + (bit-seq bs)))
+        b ^long (* offset (.cardinality bs))]
+    (+ a b)))
 
 (defn print-gen
   [[^long num [^long offset bs]]]
