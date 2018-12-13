@@ -21,8 +21,8 @@
                     clojure.java.io/reader)]
     (vec (line-seq f))))
 
-(defn s->bitset
-  [s]
+(defn ^BitSet s->bitset
+  [^String s]
   (let [bs (BitSet. (count s))]
     (doseq [[idx c] (map-indexed vector s)] (when (= \# c) (.set bs idx)))
     bs))
@@ -63,11 +63,14 @@
                           (into {})))))
 
 (defn sub-bitset
-  [^BitSet bs from to]
+  [^BitSet bs ^long from ^long to]
   ;; FIXME: use fast path if from >= 0
   (let [new-bs (BitSet.)]
-    (doseq [[new-idx old-idx] (map-indexed vector (range from to))]
-      (.set new-bs new-idx (if (neg? old-idx) false (.get bs old-idx))))
+    (doseq [[^long new-idx ^long old-idx] (map-indexed vector (range from to))]
+      (let [v (if (neg? old-idx) false ^boolean (.get bs old-idx))]
+        (.set new-bs
+              ^long new-idx
+              ^boolean v)))
     new-bs))
 
 (defn ^long bs->long
@@ -80,11 +83,11 @@
   [{:keys [lookup]} [^long offset ^BitSet bs]]
   (let [new-bs (BitSet.)
         vs (->> (range (- 0 ^long neighbors offset) (+ (.length bs) 2))
-                (map (fn [idx]
+                (map (fn [^long idx]
                        (get lookup
                             (bs->long (sub-bitset bs
-                                                  (- idx neighbors)
-                                                  (+ idx neighbors 1)))
+                                                  (- idx ^long neighbors)
+                                                  (+ idx ^long neighbors 1)))
                             false))))
         [a b] (split-with false? vs)]
     (doseq [[idx v] (map-indexed vector b)] (.set new-bs ^long idx ^long v))
