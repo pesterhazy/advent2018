@@ -76,9 +76,11 @@
        (reduce (fn [acc-carts cart]
                  (let [[xy m :as new-cart] (transform-cart graph cart)]
                    (if (acc-carts xy)
-                     (if remove?
-                       (dissoc acc-carts xy)
-                       (conj acc-carts [xy (assoc m :collision xy)]))
+                     (do
+                       (prn [:collision new-cart])
+                       (if remove?
+                         (dissoc acc-carts xy)
+                         (conj acc-carts [xy (assoc m :collision xy)])))
                      (conj acc-carts new-cart))))
                (sorted-map))))
 
@@ -100,7 +102,6 @@
   (let [graph (read-input)
         generations (iterate (partial tick graph true) (find-carts graph))]
     (some (fn [generation]
-            (prn {:count (count generation)})
             (when (= 1 (count generation))
-              (str/join "," (-> generation first first))))
+              (str/join "," (->> generation first first))))
           generations)))
