@@ -68,9 +68,9 @@
       first))
 
 (defn next-gen
-  [{:keys [lookup]} [_ bs]]
+  [{:keys [lookup]} [offset bs]]
   (let [new-bs (BitSet.)
-        vs (->> (range (- neighbors) (+ (.length bs) 2))
+        vs (->> (range (- 0 neighbors offset) (+ (.length bs) 2))
                 (map (fn [idx]
                        (get lookup
                             (bs->long (sub-bitset bs
@@ -82,8 +82,7 @@
     [(- (count a) neighbors) new-bs]))
 
 (defn print-gen
-  [[offset bs]]
-  (prn offset)
-  (println (str (apply str (repeat (+ padding offset) ".")) (bitset->s bs))))
+  [[num [offset bs]]]
+  (println (format "%2d" num) (str (apply str (repeat (+ padding offset) ".")) (bitset->s bs))))
 
 (defn generations [ctx] (iterate #(next-gen ctx %) [0 (:initial-state ctx)]))
