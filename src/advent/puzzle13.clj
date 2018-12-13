@@ -102,10 +102,6 @@
                                   collision-id))
                           (assoc acc-carts cart-id new-cart)]))
                      [#{} carts]))]
-    (when (seq collisions)
-      (prn {:collisions collisions
-            :carts carts
-            :new-carts new-carts}))
     (if remove?
       (->> new-carts
            (remove (fn [[id _]]
@@ -133,10 +129,12 @@
          (str/join ","))))
 
 (defn solution-2 []
-  (spit "log.txt" "")
   (let [graph (read-input)
-        generations (iterate (partial tick graph true) (find-carts graph))]
-    (some (fn [generation]
-            (when (= 1 (count generation))
-              generation))
-          generations)))
+        generations (iterate (partial tick graph true) (find-carts graph))
+        final-generation (some (fn [generation]
+                                 (when (= 1 (count generation))
+                                   generation))
+                               generations)]
+    (str  (-> final-generation first second :x)
+          ","
+          (-> final-generation first second :y))))
