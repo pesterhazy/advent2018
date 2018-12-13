@@ -80,30 +80,40 @@
 (defn tick [graph remove? carts]
   (let [[collisions new-carts]
         (->> carts
-             (reduce (fn [[acc-collisions acc-carts] cart]
-                       (let [[yx m :as new-cart] (transform-cart graph cart)
-                             target (or (acc-carts yx)
-                                        (carts yx))]
+             vals
+             (map :id)
+             (reduce (fn [[acc-collisions acc-carts] cart-id]
+                       (let [cart (some (fn [cart]
+                                          (when (= cart-id (:id (second cart)))
+                                            cart))
+                                        acc-carts)
+                             [yx m :as new-cart] (transform-cart graph cart)
+                             target (acc-carts yx)]
                          [(cond-> acc-collisions
                             target
                             (conj (:id m)
                                   (:id target)))
-                          (conj acc-carts new-cart)]))
-                     [#{} (sorted-map)]))]
+                          (-> acc-carts
+                              (dissoc (first cart))
+                              (conj new-cart))]))
+                     [#{} carts]))
+        result (if remove?
+                 (->> new-carts
+                      (remove (fn [[_ m]]
+                                (contains? collisions (:id m))))
+                      (into (sorted-map)))
+                 (->> new-carts
+                      (map (fn [[yx m]]
+                             [yx (cond-> m
+                                   (contains? collisions (:id m))
+                                   (assoc :collision yx))]))
+                      (into (sorted-map))))]
     (when (seq collisions)
+      #_(prn carts)
+      #_(prn new-carts)
       (prn {:ids (set (map :id (vals new-carts)))
             :collisions collisions}))
-    (if remove?
-      (->> new-carts
-           (remove (fn [[_ m]]
-                     (contains? collisions (:id m))))
-           (into (sorted-map)))
-      (->> new-carts
-           (map (fn [[yx m]]
-                  [yx (cond-> m
-                        (contains? collisions (:id m))
-                        (assoc :collision yx))]))
-           (into (sorted-map))))))
+    result))
 
 (defn print-graph [graph carts]
   (doseq [[y line] (map-indexed vector graph)]
