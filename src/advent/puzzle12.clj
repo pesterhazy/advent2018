@@ -2,8 +2,9 @@
   (:import java.util.BitSet)
   (:require [clojure.string :as str]))
 
-(def padding 2)
+(def neighbors 2)
 (def blength 5)
+(def padding 3)
 
 (defn read-sample
   []
@@ -69,18 +70,20 @@
 (defn next-gen
   [{:keys [lookup]} [_ bs]]
   (let [new-bs (BitSet.)
-        vs (->> (range (- padding) (+ (.length bs) 2))
+        vs (->> (range (- neighbors) (+ (.length bs) 2))
                 (map (fn [idx]
                        (get lookup
-                            (bs->long (sub-bitset bs (- idx padding) (+ idx padding 1)))
+                            (bs->long (sub-bitset bs
+                                                  (- idx neighbors)
+                                                  (+ idx neighbors 1)))
                             false))))
         [a b] (split-with false? vs)]
-    (doseq [[idx v] (map-indexed vector b)]
-      (.set new-bs idx v))
-    [(count a) new-bs]))
+    (doseq [[idx v] (map-indexed vector b)] (.set new-bs idx v))
+    [(- (count a) neighbors) new-bs]))
 
-(defn print-gen [[head-idx bs]]
-  (println (bitset->s bs) head-idx))
+(defn print-gen
+  [[offset bs]]
+  (prn offset)
+  (println (str (apply str (repeat (+ padding offset) ".")) (bitset->s bs))))
 
-(defn generations [ctx] (iterate #(next-gen ctx %)
-                                 [0 (:initial-state ctx)]))
+(defn generations [ctx] (iterate #(next-gen ctx %) [0 (:initial-state ctx)]))
