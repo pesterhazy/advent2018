@@ -107,5 +107,6 @@
         generations (iterate (partial tick graph true) (find-carts graph))]
     (some (fn [generation]
             (when (= 1 (count generation))
+              (spit "out.txt" (with-out-str (print-graph graph generation)))
               (str/join "," (->> generation first first reverse))))
           generations)))
