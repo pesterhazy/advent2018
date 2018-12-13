@@ -121,8 +121,9 @@
   (spit "log.txt" "")
   (let [graph (read-input)
         generations (iterate (partial tick graph true) (find-carts graph))]
-    (some (fn [generation]
-            (spit "log.txt" (str (pr-str generation) "\n") :append true)
+    (some (fn [[prev-generation generation]]
             (when (= 1 (count generation))
+              (prn prev-generation)
+              (prn generation)
               (str/join "," (->> generation first first reverse))))
-          generations)))
+          (partition 2 generations))))
