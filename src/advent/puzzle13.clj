@@ -88,7 +88,8 @@
                           (conj acc-carts new-cart)]))
                      [#{} (sorted-map)]))]
     (when (seq collisions)
-      (prn "Collisions:" collisions))
+      (prn {:ids (set (map :id (vals new-carts)))
+            :collisions collisions}))
     (->> new-carts
          (remove (fn [[_ m]]
                    (contains? collisions (:id m)))))))
