@@ -34,7 +34,7 @@
   (->> (for [[y line] (map-indexed vector graph),
              [x point] (map-indexed vector line)
              :when (cart->line point)]
-         [[x y] {:sym point
+         [[y x] {:sym point
                  :n-turns 0}])
        (into (sorted-map))))
 
@@ -44,13 +44,13 @@
     1 sym
     2 (nth directions (mod (inc (.indexOf directions sym)) 4))))
 
-(defn transform-cart [graph [[x y] {:keys [n-turns sym] :as cart}]]
-  (let [[new-x new-y]
+(defn transform-cart [graph [[y x] {:keys [n-turns sym] :as cart}]]
+  (let [[new-y new-x]
         (case sym
-          \^ [x (dec y)]
-          \v [x (inc y)]
-          \< [(dec x) y]
-          \> [(inc x) y])
+          \^ [(dec y) x]
+          \v [(inc y) x]
+          \< [y (dec x)]
+          \> [y (inc x)])
         point (point-in graph new-x new-y)
         ky [sym point]
         new-cart (case point
@@ -69,25 +69,25 @@
                            [\^ \/] \>
                            [\v \\] \>
                            [\v \/] \<)})]
-    [[new-x new-y] new-cart]))
+    [[new-y new-x] new-cart]))
 
 (defn tick [graph remove? carts]
   (->> carts
        (reduce (fn [acc-carts cart]
-                 (let [[xy m :as new-cart] (transform-cart graph cart)]
-                   (if (acc-carts xy)
+                 (let [[yx m :as new-cart] (transform-cart graph cart)]
+                   (if (acc-carts yx)
                      (do
                        (prn [:collision new-cart])
                        (if remove?
-                         (dissoc acc-carts xy)
-                         (conj acc-carts [xy (assoc m :collision xy)])))
+                         (dissoc acc-carts yx)
+                         (conj acc-carts [yx (assoc m :collision yx)])))
                      (conj acc-carts new-cart))))
                (sorted-map))))
 
 (defn print-graph [graph carts]
   (doseq [[y line] (map-indexed vector graph)]
     (println (apply str (for [[x point] (map-indexed vector line)]
-                          (or (some-> (carts [x y]) :sym)
+                          (or (some-> (carts [y x]) :sym)
                               (cart->line point point)))))))
 
 (defn solution-1 []
@@ -96,6 +96,7 @@
     (->> (some (fn [generation]
                  (some :collision (vals generation)))
                generations)
+         reverse
          (str/join ","))))
 
 (defn solution-2 []
@@ -103,5 +104,5 @@
         generations (iterate (partial tick graph true) (find-carts graph))]
     (some (fn [generation]
             (when (= 1 (count generation))
-              (str/join "," (->> generation first first))))
+              (str/join "," (->> generation first first reverse))))
           generations)))
