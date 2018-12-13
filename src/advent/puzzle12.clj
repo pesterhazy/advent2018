@@ -54,6 +54,7 @@
 
 (defn sub-bitset
   [bs from to]
+  ;; FIXME: use fast path if from >= 0
   (let [new-bs (BitSet.)]
     (doseq [[new-idx old-idx] (map-indexed vector (range from to))]
       (.set new-bs new-idx (if (neg? old-idx) false (.get bs old-idx))))
@@ -66,15 +67,20 @@
       first))
 
 (defn next-gen
-  [{:keys [lookup]} bs]
+  [{:keys [lookup]} [_ bs]]
   (let [new-bs (BitSet.)
         vs (->> (range (- padding) (+ (.length bs) 2))
                 (map (fn [idx]
                        (get lookup
                             (bs->long (sub-bitset bs (- idx padding) (+ idx padding 1)))
-                            false))))]
-    (doseq [[idx v] (map-indexed vector vs)]
-      (.set new-bs (+ idx padding) v))
-    new-bs))
+                            false))))
+        [a b] (split-with false? vs)]
+    (doseq [[idx v] (map-indexed vector b)]
+      (.set new-bs idx v))
+    [(count a) new-bs]))
 
-(defn generations [ctx] (iterate #(next-gen ctx %) (:initial-state ctx)))
+(defn print-gen [[head-idx bs]]
+  (println (bitset->s bs) head-idx))
+
+(defn generations [ctx] (iterate #(next-gen ctx %)
+                                 [0 (:initial-state ctx)]))
