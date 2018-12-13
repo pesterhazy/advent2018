@@ -2,6 +2,9 @@
   (:import java.util.BitSet)
   (:require [clojure.string :as str]))
 
+(set! *unchecked-math* :warn-on-boxed)
+(set! *warn-on-reflection* true)
+
 (def neighbors 2)
 (def blength 5)
 (def padding 3)
@@ -25,7 +28,7 @@
     bs))
 
 (defn bitset->s
-  ([s]
+  ([^String s]
    (->> (range (.length s))
         (map (fn [idx] (if (.get s idx) \# \.)))
         (str/join)))
@@ -60,7 +63,7 @@
                           (into {})))))
 
 (defn sub-bitset
-  [bs from to]
+  [^BitSet bs from to]
   ;; FIXME: use fast path if from >= 0
   (let [new-bs (BitSet.)]
     (doseq [[new-idx old-idx] (map-indexed vector (range from to))]
@@ -88,8 +91,8 @@
     [(- (count a) neighbors) new-bs]))
 
 (defn bit-seq
-  ([bs] (bit-seq bs 0))
-  ([bs idx]
+  ([^BitSet bs] (bit-seq bs 0))
+  ([^BitSet bs ^long idx]
    (lazy-seq
     (let [nxt (.nextSetBit bs idx)]
       (cond (neg? nxt)
@@ -99,13 +102,13 @@
             :else
             (bit-seq bs (inc idx)))))))
 
-(defn calc [offset bs]
+(defn calc [^long offset ^BitSet bs]
   (+ (->> bs bit-seq (reduce +)) (* offset (.cardinality bs))))
 
 (defn print-gen
-  [[num [offset bs]]]
+  [[^long num [^long offset bs]]]
   (println (format "%3d" num)
-           (str (apply str (repeat (+ padding offset) ".")) (bitset->s bs))
+           (str (apply str (repeat (+ ^long padding offset) ".")) (bitset->s bs))
            (calc offset bs)))
 
 (defn generations [ctx] (iterate #(next-gen ctx %) [0 (:initial-state ctx)]))
@@ -120,7 +123,7 @@
       (prn v)
       )
   (let [gens (->> (read-input) parse generations)]
-    (reduce (fn [[seen? idx] [offset bs]]
+    (reduce (fn [[seen? ^long idx] [offset bs]]
               (let [v (calc offset bs)]
                 (when (= 0 (mod idx 100))
                   (prn idx v))
