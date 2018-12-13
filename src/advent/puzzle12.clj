@@ -64,14 +64,15 @@
 
 (defn sub-bitset
   [^BitSet bs ^long from ^long to]
-  ;; FIXME: use fast path if from >= 0
-  (let [new-bs (BitSet.)]
-    (doseq [[^long new-idx ^long old-idx] (map-indexed vector (range from to))]
-      (let [v (if (neg? old-idx) false ^boolean (.get bs old-idx))]
-        (.set new-bs
-              ^long new-idx
-              ^boolean v)))
-    new-bs))
+  (if (or (neg? from) (neg? to))
+    (let [new-bs (BitSet.)]
+      (doseq [[^long new-idx ^long old-idx] (map-indexed vector (range from to))]
+        (let [v (if (neg? old-idx) false ^boolean (.get bs old-idx))]
+          (.set new-bs
+                ^long new-idx
+                ^boolean v)))
+      new-bs)
+    (.get bs from to)))
 
 (defn ^long bs->long
   [^BitSet bs]
