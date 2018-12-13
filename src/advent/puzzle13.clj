@@ -81,10 +81,13 @@
   (let [[collisions new-carts]
         (->> carts
              (reduce (fn [[acc-collisions acc-carts] cart]
-                       (let [[yx m :as new-cart] (transform-cart graph cart)]
+                       (let [[yx m :as new-cart] (transform-cart graph cart)
+                             target (or (acc-carts yx)
+                                        (carts yx))]
                          [(cond-> acc-collisions
-                            (acc-carts yx) (conj (:id m)
-                                                 (:id (acc-carts yx))))
+                            target
+                            (conj (:id m)
+                                  (:id target)))
                           (conj acc-carts new-cart)]))
                      [#{} (sorted-map)]))]
     (when (seq collisions)
@@ -124,7 +127,7 @@
     (some (fn [[prev-generation generation]]
             (when (= 1 (count generation))
               ;; print out previous generation for debugging
-              (prn prev-generation)
-              (prn generation)
+              #_(prn prev-generation)
+              #_(prn generation)
               (str/join "," (->> generation first first reverse))))
           (partition 2 generations))))
