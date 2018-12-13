@@ -21,8 +21,33 @@
          [[x y] point])
        (into (sorted-map))))
 
+(defn transform-cart [graph [[x y] cart-symbol]]
+  (let [[new-x new-y]
+        (case cart-symbol
+          \^ [x (dec y)]
+          \v [x (inc y)]
+          \< [(dec x) y]
+          \> [(inc x) y])
+        point (point-in graph new-x new-y)
+        ky [cart-symbol point]
+        new-symbol (case ky
+                     [\> \\] \v
+                     [\> \/] \^
+                     [\< \\] \^
+                     [\< \/] \v
+                     [\^ \\] \<
+                     [\^ \/] \>
+                     [\v \\] \>
+                     [\v \/] \<
+                     (do
+                       (assert (#{\- \|} point) (str "Unexpected: " ky))
+                       cart-symbol))]
+    [[x y] new-symbol]))
+
 (defn tick [graph carts]
-  carts)
+  (->> carts
+       (map (partial transform-cart graph))
+       (into (sorted-map))))
 
 (defn print-graph [graph carts]
   (doseq [[y line] (map-indexed vector graph)]
@@ -33,4 +58,4 @@
 (defn solution-1 []
   (let [graph (read-sample)
         carts (find-carts graph)]
-    (print-graph (tick graph carts))))
+    (print-graph graph (tick graph carts))))
