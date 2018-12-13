@@ -13,6 +13,12 @@
                     clojure.java.io/reader)]
     (vec (line-seq f))))
 
+(defn read-sample-2
+  []
+  (with-open [f (-> "13/sample2.txt"
+                    clojure.java.io/reader)]
+    (vec (line-seq f))))
+
 (def cart->line {\^ \|
                  \> \-
                  \v \-
@@ -65,12 +71,14 @@
                            [\v \/] \<)})]
     [[new-x new-y] new-cart]))
 
-(defn tick [graph carts]
+(defn tick [graph remove? carts]
   (->> carts
        (reduce (fn [acc-carts cart]
                  (let [[xy m :as new-cart] (transform-cart graph cart)]
                    (if (acc-carts xy)
-                     (conj acc-carts [xy (assoc m :collision xy)])
+                     (if remove?
+                       (dissoc acc-carts xy)
+                       (conj acc-carts [xy (assoc m :collision xy)]))
                      (conj acc-carts new-cart))))
                (sorted-map))))
 
@@ -82,8 +90,17 @@
 
 (defn solution-1 []
   (let [graph (read-input)
-        generations (iterate (partial tick graph) (find-carts graph))]
+        generations (iterate (partial tick graph false) (find-carts graph))]
     (->> (some (fn [generation]
                  (some :collision (vals generation)))
                generations)
          (str/join ","))))
+
+(defn solution-2 []
+  (let [graph (read-input)
+        generations (iterate (partial tick graph true) (find-carts graph))]
+    (some (fn [generation]
+            (prn {:count (count generation)})
+            (when (= 1 (count generation))
+              (str/join "," (-> generation first first))))
+          generations)))
