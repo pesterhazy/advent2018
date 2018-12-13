@@ -43,3 +43,7 @@ Conclusions
 - I now have serious FOMO w/r/t mutable data structures
 - Learn the Java class library
 - Engage more with other language communities. Python, Ruby and Java can have elegant solutions. The right data structures are more important than the language.
+
+## Day 12
+
+- (last (take n xs)) is not the same as (nth xs n)

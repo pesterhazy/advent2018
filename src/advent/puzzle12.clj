@@ -81,18 +81,28 @@
     (doseq [[idx v] (map-indexed vector b)] (.set new-bs idx v))
     [(- (count a) neighbors) new-bs]))
 
-(defn bit-sum
-  [bs]
-  (loop [sum 0
-         idx 0]
+(defn bit-seq
+  ([bs] (bit-seq bs 0))
+  ([bs idx]
+   (lazy-seq
     (let [nxt (.nextSetBit bs idx)]
-      (if (neg? nxt) sum (recur (+ sum idx) (inc idx))))))
+      (cond (neg? nxt)
+            '()
+            (= nxt idx)
+            (cons nxt (bit-seq bs (inc idx)))
+            :else
+            (bit-seq bs (inc idx)))))))
+
+(defn calc [offset bs]
+  (+ (->> bs bit-seq (reduce +)) (* offset (.cardinality bs))))
 
 (defn print-gen
   [[num [offset bs]]]
-  (prn offset)
   (println (format "%2d" num)
-           (str (apply str (repeat (+ padding offset) ".")) (bitset->s bs))
-           (+ (bit-sum bs) (* offset (.cardinality bs)))))
+           (str (apply str (repeat (+ padding offset) ".")) (bitset->s bs))))
 
 (defn generations [ctx] (iterate #(next-gen ctx %) [0 (:initial-state ctx)]))
+
+(defn solution-1 []
+  (let [gens (->> (read-sample) parse generations)]
+    (apply calc (nth gens 20))))
