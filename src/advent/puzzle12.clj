@@ -26,19 +26,22 @@
 
 (defn parse-header
   [line]
-  (->> (re-matches regex line)
-       second
-       (str (apply str (repeat padding \.)))
-       ->bitset))
+  (let [s (->> (re-matches regex line)
+               second)]
+    {:length (count s)
+     :initial-state (s->bitset (str (apply str (repeat padding \.)) s))}))
 
 (def regex2 #"^([#.]+) => ([#.])$")
 
 (defn parse-body-line
   [line]
   (let [[_ k v] (re-matches regex2 line)]
+    (prn k v)
     [(-> k
-         ->bitset
+         s->bitset
          .toLongArray
-         first) (= \# v)]))
+         first) (= "#" v)]))
 
-(defn parse [[fst _ & body]] [(parse-header fst) (mapv parse-body-line body)])
+(defn parse [[fst _ & body]]
+  (-> (parse-header fst)
+      (assoc :lookup (->> body (map parse-body-line) (into {})))))
