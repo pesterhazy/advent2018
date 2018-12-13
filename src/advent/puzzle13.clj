@@ -123,6 +123,7 @@
         generations (iterate (partial tick graph true) (find-carts graph))]
     (some (fn [[prev-generation generation]]
             (when (= 1 (count generation))
+              ;; print out previous generation for debugging
               (prn prev-generation)
               (prn generation)
               (str/join "," (->> generation first first reverse))))
