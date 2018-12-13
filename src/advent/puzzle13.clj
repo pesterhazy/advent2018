@@ -6,15 +6,16 @@
                     clojure.java.io/reader)]
     (vec (line-seq f))))
 
-(defn point-in [graph x y]
-  (nth (nth graph y) x))
-
 (def cart->line {\^ \|
                  \> \-
                  \v \-
                  \< \|})
 
 (def directions [\^ \> \v \<])
+
+(defn point-in [graph x y]
+  (let [point (nth (nth graph y) x)]
+    (or (cart->line point) point)))
 
 (defn find-carts [graph]
   (->> (for [[y line] (map-indexed vector graph),
@@ -59,8 +60,13 @@
 
 (defn tick [graph carts]
   (->> carts
-       (map (partial transform-cart graph))
-       (into (sorted-map))))
+       (reduce (fn [acc-carts cart]
+                 (let [[xy :as new-cart] (transform-cart graph cart)]
+                   (prn (keys acc-carts) xy)
+                   (if (acc-carts xy)
+                     (throw (ex-info (str "Collision at: " xy) {}))
+                     (conj acc-carts new-cart))))
+               (sorted-map))))
 
 (defn print-graph [graph carts]
   (doseq [[y line] (map-indexed vector graph)]
@@ -71,6 +77,6 @@
 (defn solution-1 []
   (let [graph (read-sample)
         generations (->> (iterate (partial tick graph) (find-carts graph))
-                         (take 5))]
+                         (take 20))]
     (doseq [generation generations]
       (print-graph graph generation))))
