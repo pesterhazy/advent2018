@@ -1,5 +1,6 @@
 (ns advent.puzzle13
-  (:require [clojure.string :as str]))
+  (:require [clojure.string :as str]
+            [clojure.set :as set]))
 
 (defn read-sample
   []
@@ -115,15 +116,20 @@
            (into {})))))
 
 (defn print-graph [graph carts]
-  (doseq [[y line] (map-indexed vector graph)]
-    (println (apply str (for [[x point] (map-indexed vector line)]
-                          (or (some-> (carts [y x]) :sym)
-                              (cart->line point point)))))))
+  (let [xy->cart (-> carts vals (set/index [:x :y]))]
+    (doseq [[y line] (map-indexed vector graph)]
+      (println (apply str (for [[x point] (map-indexed vector line)]
+                            (or (some-> (xy->cart {:x x :y y})
+                                        first
+                                        :sym)
+                                (cart->line point point))))))
+    (println)))
 
 (defn solution-1 []
-  (let [graph (read-input)
+  (let [graph (read-sample)
         generations (iterate (partial tick graph false) (find-carts graph))]
     (->> (some (fn [generation]
+                 (print-graph graph generation)
                  (some :collision (vals generation)))
                generations)
          (str/join ","))))
