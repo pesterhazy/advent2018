@@ -39,6 +39,8 @@
              :when (cart->line point)]
          [[y x] {:sym point
                  :n-turns 0}])
+       (map-indexed (fn [idx [xy m]]
+                      [xy (assoc m :id idx)]))
        (into (sorted-map))))
 
 (defn rotate [sym nturns]
@@ -59,33 +61,37 @@
                    (\| \-)
                    cart
                    \+
-                   {:n-turns (inc n-turns)
-                    :sym (rotate sym n-turns)}
+                   (assoc cart
+                          :n-turns (inc n-turns)
+                          :sym (rotate sym n-turns))
                    (\\ \/)
-                   {:n-turns n-turns
-                    :sym (case [sym point]
-                           [\> \\] \v
-                           [\> \/] \^
-                           [\< \\] \^
-                           [\< \/] \v
-                           [\^ \\] \<
-                           [\^ \/] \>
-                           [\v \\] \>
-                           [\v \/] \<)})]
+                   (assoc cart
+                          :sym (case [sym point]
+                                 [\> \\] \v
+                                 [\> \/] \^
+                                 [\< \\] \^
+                                 [\< \/] \v
+                                 [\^ \\] \<
+                                 [\^ \/] \>
+                                 [\v \\] \>
+                                 [\v \/] \<)))]
     [[new-y new-x] new-cart]))
 
 (defn tick [graph remove? carts]
-  (->> carts
-       (reduce (fn [acc-carts cart]
-                 (let [[yx m :as new-cart] (transform-cart graph cart)]
-                   (if (acc-carts yx)
-                     (do
-                       (prn [:collision yx m (acc-carts yx)])
-                       (if remove?
-                         (dissoc acc-carts yx)
-                         (conj acc-carts [yx (assoc m :collision yx)])))
-                     (conj acc-carts new-cart))))
-               (sorted-map))))
+  (let [[collisions new-carts]
+        (->> carts
+             (reduce (fn [[acc-collisions acc-carts] cart]
+                       (let [[yx m :as new-cart] (transform-cart graph cart)]
+                         [(cond-> acc-collisions
+                            (acc-carts yx) (conj (:id m)
+                                                 (:id (acc-carts yx))))
+                          (conj acc-carts new-cart)]))
+                     [#{} (sorted-map)]))]
+    (when (seq collisions)
+      (prn "Collisions:" collisions))
+    (->> new-carts
+         (remove (fn [[_ m]]
+                   (contains? collisions (:id m)))))))
 
 (defn print-graph [graph carts]
   (doseq [[y line] (map-indexed vector graph)]
@@ -107,6 +113,5 @@
         generations (iterate (partial tick graph true) (find-carts graph))]
     (some (fn [generation]
             (when (= 1 (count generation))
-              (spit "out.txt" (with-out-str (print-graph graph generation)))
               (str/join "," (->> generation first first reverse))))
           generations)))
