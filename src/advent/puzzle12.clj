@@ -70,16 +70,16 @@
       (.set new-bs new-idx (if (neg? old-idx) false (.get bs old-idx))))
     new-bs))
 
-(defn bs->long
-  [bs]
+(defn ^long bs->long
+  [^BitSet bs]
   (-> bs
       .toLongArray
       first))
 
 (defn next-gen
-  [{:keys [lookup]} [offset bs]]
+  [{:keys [lookup]} [^long offset ^BitSet bs]]
   (let [new-bs (BitSet.)
-        vs (->> (range (- 0 neighbors offset) (+ (.length bs) 2))
+        vs (->> (range (- 0 ^long neighbors offset) (+ (.length bs) 2))
                 (map (fn [idx]
                        (get lookup
                             (bs->long (sub-bitset bs
@@ -87,8 +87,8 @@
                                                   (+ idx neighbors 1)))
                             false))))
         [a b] (split-with false? vs)]
-    (doseq [[idx v] (map-indexed vector b)] (.set new-bs idx v))
-    [(- (count a) neighbors) new-bs]))
+    (doseq [[idx v] (map-indexed vector b)] (.set new-bs ^long idx ^long v))
+    [(- (count a) ^long neighbors) new-bs]))
 
 (defn bit-seq
   ([^BitSet bs] (bit-seq bs 0))
@@ -103,7 +103,7 @@
             (bit-seq bs (inc idx)))))))
 
 (defn calc [^long offset ^BitSet bs]
-  (+ (->> bs bit-seq (reduce +)) (* offset (.cardinality bs))))
+  (+ ^long (->> bs bit-seq (reduce +)) ^long (* offset (.cardinality bs))))
 
 (defn print-gen
   [[^long num [^long offset bs]]]
