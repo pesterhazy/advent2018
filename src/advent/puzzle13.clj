@@ -92,7 +92,8 @@
             :collisions collisions}))
     (->> new-carts
          (remove (fn [[_ m]]
-                   (contains? collisions (:id m)))))))
+                   (contains? collisions (:id m))))
+         (into (sorted-map)))))
 
 (defn print-graph [graph carts]
   (doseq [[y line] (map-indexed vector graph)]
@@ -110,9 +111,11 @@
          (str/join ","))))
 
 (defn solution-2 []
+  (spit "log.txt" "")
   (let [graph (read-input)
         generations (iterate (partial tick graph true) (find-carts graph))]
     (some (fn [generation]
+            (spit "log.txt" (str (pr-str generation) "\n") :append true)
             (when (= 1 (count generation))
               (str/join "," (->> generation first first reverse))))
           generations)))
