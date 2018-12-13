@@ -66,14 +66,15 @@
       first))
 
 (defn next-gen
-  [{:keys [lookup length]} bs]
-  (let [new-bs (BitSet.)]
-    (doseq [idx (range (- padding) length)]
-      (let [v (get lookup
-                   (bs->long (sub-bitset bs (- idx padding) (+ idx padding 1)))
-                   false)]
-        (when-not (neg? idx)
-          (.set new-bs idx v))))
+  [{:keys [lookup]} bs]
+  (let [new-bs (BitSet.)
+        vs (->> (range (- padding) (+ (.length bs) 2))
+                (map (fn [idx]
+                       (get lookup
+                            (bs->long (sub-bitset bs (- idx padding) (+ idx padding 1)))
+                            false))))]
+    (doseq [[idx v] (map-indexed vector vs)]
+      (.set new-bs (+ idx padding) v))
     new-bs))
 
 (defn generations [ctx] (iterate #(next-gen ctx %) (:initial-state ctx)))
