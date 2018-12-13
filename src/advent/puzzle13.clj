@@ -90,10 +90,17 @@
     (when (seq collisions)
       (prn {:ids (set (map :id (vals new-carts)))
             :collisions collisions}))
-    (->> new-carts
-         (remove (fn [[_ m]]
-                   (contains? collisions (:id m))))
-         (into (sorted-map)))))
+    (if remove?
+      (->> new-carts
+           (remove (fn [[_ m]]
+                     (contains? collisions (:id m))))
+           (into (sorted-map)))
+      (->> new-carts
+           (map (fn [[yx m]]
+                  [yx (cond-> m
+                        (contains? collisions (:id m))
+                        (assoc :collision yx))]))
+           (into (sorted-map))))))
 
 (defn print-graph [graph carts]
   (doseq [[y line] (map-indexed vector graph)]
