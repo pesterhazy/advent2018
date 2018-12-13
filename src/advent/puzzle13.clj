@@ -126,10 +126,10 @@
     (println)))
 
 (defn solution-1 []
-  (let [graph (read-sample)
+  (let [graph (read-input)
         generations (iterate (partial tick graph false) (find-carts graph))]
     (->> (some (fn [generation]
-                 (print-graph graph generation)
+                 #_(print-graph graph generation)
                  (some :collision (vals generation)))
                generations)
          (str/join ","))))
