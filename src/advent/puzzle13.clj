@@ -41,7 +41,8 @@
           :y y
           :sym point
           :n-turns 0})
-       (map-indexed vector)
+       (map-indexed (fn [idx m]
+                      [idx (assoc m :id idx)]))
        (into {})))
 
 (defn rotate [sym nturns]
@@ -84,21 +85,23 @@
   (let [[collisions new-carts]
         (->> carts
              (reduce (fn [[acc-collisions acc-carts] [cart-id cart]]
-                       (let [new-cart (transform-cart graph cart)
+                       (let [new-cart
+                             (transform-cart graph cart),
+
                              collision-id
                              (->> acc-carts
                                   (sort-by (fn [[_ m]]
                                              [(:y m) (:x m)]))
                                   (some (fn [[id m]]
-                                          (when (and (= (:x cart) (:x m))
-                                                     (= (:y cart) (:y m)))
+                                          (when (and (= (:x new-cart) (:x m))
+                                                     (= (:y new-cart) (:y m)))
                                             id))))]
                          [(cond-> acc-collisions
                             collision-id
                             (conj cart-id
                                   collision-id))
                           (assoc acc-carts cart-id new-cart)]))
-                     [#{} {}]))]
+                     [#{} carts]))]
     (when (seq collisions)
       (prn {:collisions collisions
             :carts carts
