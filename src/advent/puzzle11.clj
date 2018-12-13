@@ -8,9 +8,10 @@
 (defn hun ^long [^long n]
   (int (/ ^long (mod n 1000) 100)))
 
-(defn ->level ^long [^long grid-sn ^long x ^long y]
-  (- (hun (* (+ x 10) (+ (* y (+ x 10)) grid-sn))) 5))
+(defn ->level ^long [^long x ^long y]
+  (- (hun (* (+ x 10) (+ (* y (+ x 10)) ^long grid-sn))) 5))
 
+(def max-square-size 100)
 (def width 300)
 (def height 300)
 
@@ -26,7 +27,7 @@
   (map (fn [[k pairs]]
          [k
           (->> pairs
-               (map (fn [pair] (apply ->level grid-sn pair)))
+               (map (fn [pair] (apply ->level  pair)))
                (apply +))])
        blocks))
 
@@ -36,42 +37,31 @@
        (apply max-key second)
        first))
 
-#_(defn evaluate-square ^long [^long size ^long x ^long y]
-    (->> (for [y* (range y (+ y size))
-               x* (range x (+ x size))]
-           (->level grid-sn x* y*))
-         (reduce +)))
+(defn hblocks
+  "Returns all horizontal blocks for a given size
 
-(defn inner ^long [^long size ^long x ^long y*]
-  (loop [result 0
-         x* x]
-    (if (< x* (+ x size))
-      (recur (+ result (->level grid-sn x* y*))
-             (inc x*))
-      result)))
+  An hblock has a vertical extension of 1 block"
+  [^long size]
+  (mapcat (fn [^long y]
+            (map (fn [^long x]
+                   [[x y size] (->> (range x (+ x size)) (reduce (fn ^long [^long acc ^long x*] (+ acc (->level x* y))) 0))])
+                 (range (- ^long width (dec size)))))
+          (range height)))
 
-(defn evaluate-square ^long [^long size ^long x ^long y]
-  (loop [result 0
-         y* y]
-    (if (< y* (+ y size))
-      (recur (+ result (inner size x y*))
-             (inc y*))
-      result)))
-
-(defn evaluate-size [^long size]
-  (->> (for [y (range (- ^long height size))
-             x (range (- ^long width size))]
-         [x y])
-       (reduce (fn [[acc-v acc-xy :as acc] [x y]]
-                 (let [new-v (evaluate-square size x y)]
-                   (if (> new-v ^long acc-v)
-                     [new-v [x y]]
-                     acc))))))
+(defn all-hblocks []
+  (->> (range 1 (inc ^long max-square-size))
+       (reduce (fn [acc size]
+                 (println size)
+                 (into acc (hblocks size)))
+               {})))
 
 (defn solution-2 []
-  (->> (range 3 100)
-       (map (fn [size]
-              (println size)
-              [size
-               (time (evaluate-size size))]))
-       doall))
+  (let [hblock->v (time (all-hblocks))]
+    (->> (for [size (range 1 (inc ^long max-square-size))
+               x (range 0 (- ^long width ^long size))
+               y (range 0 (- ^long height ^long size))]
+           [(->> (for [y* (range y (+ ^long y ^long size))]
+                   (hblock->v [x y* size]))
+                 (apply +))
+            [x y size]])
+         (apply max-key first))))
