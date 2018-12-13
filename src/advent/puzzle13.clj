@@ -27,8 +27,11 @@
 (def directions [\^ \> \v \<])
 
 (defn point-in [graph x y]
-  (let [point (nth (nth graph y) x)]
-    (or (cart->line point) point)))
+  (let [point (nth (nth graph y) x)
+        point* (or (cart->line point) point)]
+    (assert (#{\- \| \+ \\ \/} point*)
+            (str "Invariant failed: " (pr-str point*)))
+    point*))
 
 (defn find-carts [graph]
   (->> (for [[y line] (map-indexed vector graph),
