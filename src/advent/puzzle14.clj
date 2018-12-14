@@ -24,15 +24,21 @@
 
 (defn generations [] (iterate next-state initial-state))
 
-(defn recipes []
-  (let [gens (->> (generations)
-                  (map :nums)
-                  (partition 2 1))
-        fst (ffirst gens)]
+(defn bit-by-bit
+  "Takes seq of vectors, where each is assumed to be the previous vector with some
+  new elements appended to it. Returns a sequence of novelty"
+  [vs]
+  (let [pairs (partition 2 1 vs)
+        fst (ffirst pairs)]
     (concat fst
             (mapcat (fn [[prev cur]]
                       (subvec cur (count prev)))
-                    gens))))
+                    pairs))))
+
+(defn recipes []
+  (->> (generations)
+       (map :nums)
+       bit-by-bit))
 
 (defn solution-1
   [n]
