@@ -11,21 +11,26 @@
 
 (defn next-state
   [init-state]
-  (let [new-nums (apply ->recipes (map (:nums init-state) (:positions init-state)))
+  (let [new-nums (apply ->recipes
+                        (map (:nums init-state) (:positions init-state)))
         {:keys [nums], :as state*} (update init-state :nums into new-nums)]
     (update state*
             :positions
             (fn [positions]
               (->> positions
                    (mapv (fn [position]
-                           (mod (+ position (nums position) 1) (count nums)))))))))
+                           (mod (+ position (nums position) 1)
+                                (count nums)))))))))
 
-(defn generations []
-  (iterate next-state initial-state))
+(defn generations [] (iterate next-state initial-state))
 
-(defn solution-1 [n]
+(defn solution-1
+  [n]
   (let [state (->> (generations)
-                   (drop-while (fn [state]
-                                 (< (count (:nums state)) (+ n 10))))
+                   (drop-while (fn [state] (< (count (:nums state)) (+ n 10))))
                    first)]
-    (->> state :nums (drop n) (take 10) (str/join))))
+    (->> state
+         :nums
+         (drop n)
+         (take 10)
+         (str/join))))
