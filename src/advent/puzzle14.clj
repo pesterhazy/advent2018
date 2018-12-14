@@ -24,6 +24,16 @@
 
 (defn generations [] (iterate next-state initial-state))
 
+(defn recipes []
+  (let [gens (->> (generations)
+                  (map :nums)
+                  (partition 2 1))
+        fst (ffirst gens)]
+    (concat fst
+            (mapcat (fn [[prev cur]]
+                      (subvec cur (count prev)))
+                    gens))))
+
 (defn solution-1
   [n]
   (let [state (->> (generations)
@@ -34,3 +44,12 @@
          (drop n)
          (take 10)
          (str/join))))
+
+(defn solution-2
+  [^String needle]
+  (->> (recipes)
+       (partition (count needle) 1)
+       (map-indexed vector)
+       (drop-while (fn [[_ nums]]
+                     (not= needle (str/join nums))))
+       ffirst))
