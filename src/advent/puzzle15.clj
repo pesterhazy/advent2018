@@ -36,6 +36,9 @@
 
 (def terrain? #{\# \.})
 
+(defn dead? [unit]
+  (< ^long (:hp unit) 1))
+
 (defn extract [grid]
   (let [m
         (->> grid
@@ -82,6 +85,7 @@
 (defn decorate [{:keys [base-grid units]}]
   (->> units
        vals
+       (remove dead?)
        (reduce (fn [grid unit]
                  (assoc-in grid (:yx unit) (case (:type unit)
                                              :elf "E"
@@ -176,6 +180,7 @@
   (->> state
        :units
        vals
+       (remove dead?)
        (filter (fn [unit*] (and (not= (:id unit) (:id unit*))
                                 (not= (:type unit) (:type unit*)))))))
 
@@ -228,24 +233,28 @@
                      (assoc unit :yx (-> candidates first second))))))))
 
 (defn attack [state id]
-  (let [candidates (set (neighbors (:base-grid state) (get-in state [:units id :yx])))
-        ts (->> (targets state (get-in state [:units id]))
+  (let [ts* (targets state (get-in state [:units id]))
+        _ (when (empty? ts*)
+            (println "No target left, id:" id))
+        candidates (set (neighbors (:base-grid state) (get-in state [:units id :yx])))
+        ts (->> ts*
                 (filter (comp candidates :yx))
                 (sort-by (juxt :hp :yx)))]
     (if (empty? ts)
       state
-      (do
-        (prn [:attack ts])
-        (update-in state [:units (:id (first ts)) :hp]
-                   (fn [hp] (- hp 3)))))))
+      (update-in state [:units (:id (first ts)) :hp]
+                 (fn [^long hp] (- hp 3))))))
 
 (defn turn [state id]
-  (let [in-range (fights state (get-in state [:units id]))
-        can-attack? (in-range (get-in state [:units id :yx]))
-        state* (if can-attack?
-                 state ;; skip if already in range
-                 (move state (get-in state [:units id]) in-range))]
-    (attack state* id)))
+  (let [unit (get-in state [:units id])]
+    (if (dead? unit)
+      state
+      (let [in-range (fights state unit)
+            can-attack? (in-range (get-in state [:units id :yx]))
+            state* (if can-attack?
+                     state ;; skip if already in range
+                     (move state (get-in state [:units id]) in-range))]
+        (attack state* id)))))
 
 (defn round [state]
   (->> state
@@ -277,7 +286,7 @@
 (defn test5 []
   (let [generations (iterate round (-> (read-sample3) parse extract))]
     (->> generations
-         (take 8)
+         (take 20)
          (map-indexed vector)
          (run! (fn [[idx state]]
                  (println)
