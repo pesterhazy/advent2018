@@ -219,7 +219,7 @@
                    (fn [unit]
                      (assoc unit :yx (-> candidates first second))))))))
 
-(defn turn-unit [state unit]
+(defn turn [state unit]
   (let [in-range (fights state unit)
         can-attack? (in-range (:yx unit))]
     (prn {:id (:id unit)
@@ -229,11 +229,15 @@
       (attack state unit in-range)
       (move state unit in-range))))
 
-(defn turn [state]
-  (let [ids (-> state :units keys)]
-    (reduce (fn [state id]
-              (turn-unit state (-> state :units (get id))))
-            state ids)))
+(defn round [state]
+  (->> state
+       :units
+       vals
+       (map :id)
+       sort
+       (reduce (fn [state id]
+                 (turn state (-> state :units (get id))))
+               state)))
 
 (defn test1 []
   (print-grid (reduce highlight t-base-grid (find-path* t-base-grid [2 3] [2 5]))))
@@ -247,10 +251,10 @@
     (prn {:path-length (count path)})))
 
 (defn test4 []
-  (let [generations (iterate turn t-state)]
+  (let [generations (iterate round t-state)]
     (->> generations
          (take 3)
          (run! print-state))))
 
 ;; TODO: attack immediately after moving
-;; TODO: sort units before turn
+;; TODO: sort units before round
