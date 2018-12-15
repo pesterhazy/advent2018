@@ -180,9 +180,8 @@
                         (repeat target))))
          (into {}))))
 
-(defn attack [state unit target]
-  (prn [:attack unit target])
-  (assert false "attack not implemented")
+(defn attack [state id]
+  (prn [:attack id])
   state)
 
 (defn move [state unit in-range]
@@ -219,15 +218,13 @@
                    (fn [unit]
                      (assoc unit :yx (-> candidates first second))))))))
 
-(defn turn [state unit]
-  (let [in-range (fights state unit)
-        can-attack? (in-range (:yx unit))]
-    (prn {:id (:id unit)
-          :in-range in-range
-          :can-attack? (boolean can-attack?)})
-    (if can-attack?
-      (attack state unit in-range)
-      (move state unit in-range))))
+(defn turn [state id]
+  (let [in-range (fights state (get-in state [:units id]))
+        can-attack? (in-range (get-in state [:units id :yx]))
+        state* (if can-attack?
+                 state ;; skip if already in range
+                 (move state (get-in state [:units id]) in-range))]
+    (attack state* id)))
 
 (defn round [state]
   (->> state
@@ -236,7 +233,7 @@
        (map :id)
        sort
        (reduce (fn [state id]
-                 (turn state (-> state :units (get id))))
+                 (turn state id))
                state)))
 
 (defn test1 []
@@ -257,4 +254,3 @@
          (run! print-state))))
 
 ;; TODO: attack immediately after moving
-;; TODO: sort units before round
