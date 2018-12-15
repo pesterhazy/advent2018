@@ -134,7 +134,7 @@
 
 (defn find-path*
   "A*"
-  [grid start end]
+  [neighbors-fn start end]
   (let [frontier (PriorityQueue.)
         came-from (HashMap.)
         cost-so-far (HashMap.)]
@@ -145,7 +145,7 @@
       (when-not (.isEmpty frontier)
         (let [current (second (.remove frontier))]
           (when-not (= end current)
-            (doseq [nxt (neighbors grid current)]
+            (doseq [nxt (neighbors-fn current)]
               (let [new-cost (inc ^long (.get cost-so-far current))]
                 (when (or (not (.containsKey cost-so-far nxt))
                           (< new-cost ^long (.get cost-so-far nxt)))
@@ -182,15 +182,15 @@
   state)
 
 (defn move [state unit in-range]
-  (prn [:choose-fight
-        (->> in-range
-             (map (fn [[yx target]]
-                    [yx
-                     (:id target)
-                     (some-> (find-path* (:base-grid state)
-                                         (:yx unit)
-                                         yx)
-                             count)])))])
+  (let [inhabited-grid (decorate state)]
+    (prn [:choose-fight
+          (->> in-range
+               (keep (fn [[yx target]]
+                       (when-let [distance (some-> (find-path* #(neighbors inhabited-grid %)
+                                                               (:yx unit)
+                                                               yx)
+                                                   count)]
+                         [yx (:id target) distance]))))]))
   state)
 
 (defn turn [state unit]
