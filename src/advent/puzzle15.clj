@@ -152,6 +152,14 @@
           result
           (recur (conj result (.get came-from (first result)))))))))
 
+(defn targets [state unit]
+  (assert unit)
+  (->> state
+       :units
+       vals
+       (filter (fn [unit*] (and (not= (:id unit) (:id unit*))
+                                (not= (:type unit) (:type unit*)))))))
+
 (defn test1 []
   (print-grid (reduce highlight tgrid (find-path* tgrid [3 2] [5 2]))))
 
