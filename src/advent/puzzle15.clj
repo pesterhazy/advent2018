@@ -181,13 +181,14 @@
          (into {}))))
 
 (defn attack [state unit target]
+  (prn [:attack unit target])
   (assert false "attack not implemented")
   state)
 
 (defn move [state unit in-range]
   (let [inhabited-grid (decorate state)
         chosen (->> in-range
-                    (keep (fn [[yx target]]
+                    (keep (fn [[yx _]]
                             (when-let [distance (some-> (find-path* #(neighbors inhabited-grid %)
                                                                     (:yx unit)
                                                                     yx)
@@ -204,13 +205,19 @@
                     first)]
     (if-not chosen
       state
-      (let [path (find-path* #(neighbors inhabited-grid %)
-                             (:yx unit)
-                             chosen)]
-        (assert path)
+      ;; when there's a tie, pick direction in reading order
+      (let [candidates (->> (neighbors inhabited-grid (:yx unit))
+                            (keep (fn [yx]
+                                    (when-let [distance (some-> (find-path* #(neighbors inhabited-grid %)
+                                                                            chosen
+                                                                            yx)
+                                                                count)]
+                                      [distance yx])))
+                            sort)]
+        (assert (seq candidates))
         (update-in state [:units (:id unit)]
                    (fn [unit]
-                     (assoc unit :yx (second path))))))))
+                     (assoc unit :yx (-> candidates first second))))))))
 
 (defn turn-unit [state unit]
   (let [in-range (fights state unit)
@@ -244,3 +251,6 @@
     (->> generations
          (take 3)
          (run! print-state))))
+
+;; TODO: attack immediately after moving
+;; TODO: sort units before turn
