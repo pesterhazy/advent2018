@@ -41,11 +41,9 @@
                                   (reduce (fn [[acc-v acc-units] [x c]]
                                             [(conj acc-v (get terrain? c \.))
                                              (case c
-                                               \E (conj acc-units {:x x
-                                                                   :y y
+                                               \E (conj acc-units {:yx [y x]
                                                                    :type :elf})
-                                               \G (conj acc-units {:x x
-                                                                   :y y
+                                               \G (conj acc-units {:yx [y x]
                                                                    :type :goblin})
                                                acc-units)])
                                           [[] acc-units]))]
@@ -75,19 +73,16 @@
                                 "\u001B[32m•\u001B[0m"
                                 c)) line)))))
 
-(defn highlight [grid [x y]]
+(defn highlight [grid [y x]]
   (assoc-in grid [y x] \x))
 
 (def directions [[-1 0] [0 -1] [1 0] [0 1]])
 
-(defn point-in [grid [x y]]
-  (get-in grid [y x]))
-
-(defn neighbors [grid [^long x ^long y]]
+(defn neighbors [grid [^long y ^long x]]
   (keep (fn [[^long dx ^long dy]]
-          (let [xy [(+ x dx) (+ y dy)]]
-            (when (= \. (point-in grid xy))
-              xy)))
+          (let [yx [(+ y dy) (+ x dx)]]
+            (when (= \. (get-in grid yx))
+              yx)))
         directions))
 
 ;; https://www.redblobgames.com/pathfinding/a-star/introduction.html
@@ -160,13 +155,42 @@
        (filter (fn [unit*] (and (not= (:id unit) (:id unit*))
                                 (not= (:type unit) (:type unit*)))))))
 
+(defn fights
+  "Returns map of [yx-attack-square unit]"
+  [state unit]
+  (->> (targets state unit)
+       (mapcat (fn [target]
+                 ;; FIXME: account for squares taken up
+                 ;; by units
+                 (map vector (neighbors (:grid state) (:yx target))
+                      (repeat target))))
+       (into {})))
+
+(defn attack [state unit target]
+  state)
+
+(defn choose-fight [state unit fs]
+  (prn [:choose-fight])
+  state)
+
+(defn turn [state unit]
+  (let [fs (fights state unit)
+        in-range (fs (:yx unit))
+        _ (prn {:in-range in-range})]
+    (if in-range
+      (attack state unit in-range)
+      (choose-fight state unit fs))))
+
 (defn test1 []
-  (print-grid (reduce highlight tgrid (find-path* tgrid [3 2] [5 2]))))
+  (print-grid (reduce highlight tgrid (find-path* tgrid [2 3] [2 5]))))
 
 (defn test2 []
   (print-grid (reduce highlight t2grid (find-path t2grid [2 3] [2 5]))))
 
 (defn test3 [find-path-fn]
-  (let [path (time (find-path-fn igrid [1 10] [30 19]))]
+  (let [path (time (find-path-fn igrid [10 1] [19 30]))]
     (print-grid (reduce highlight igrid path))
     (prn {:path-length (count path)})))
+
+(defn test4 []
+  (turn tstate (-> tstate :units (get 0))))
