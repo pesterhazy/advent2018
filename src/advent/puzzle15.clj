@@ -50,21 +50,21 @@
                          [(conj acc-v new-row)
                           new-units]))
                      [[] []])
-             (zipmap [:grid :units]))]
+             (zipmap [:base-grid :units]))]
     (update m :units (fn [units]
                        (->> units
                             (map-indexed (fn [id unit]
                                            [id (assoc unit :id id)]))
                             (into {}))))))
 
-(def tstate (-> (read-sample) parse extract))
-(def tgrid (:grid tstate))
+(def t-state (-> (read-sample) parse extract))
+(def t-base-grid (:base-grid t-state))
 
-(def t2state (-> (read-sample2) parse extract))
-(def t2grid (:grid t2state))
+(def t2-state (-> (read-sample2) parse extract))
+(def t2-base-grid (:base-grid t2-state))
 
-(def istate (-> (read-input) parse extract))
-(def igrid (:grid istate))
+(def i-state (-> (read-input) parse extract))
+(def i-base-grid (:base-grid i-state))
 
 (defn print-grid [grid]
   (doseq [line grid]
@@ -72,6 +72,18 @@
                               (if (= \x c)
                                 "\u001B[32m•\u001B[0m"
                                 c)) line)))))
+
+(defn decorate [{:keys [base-grid units]}]
+  (->> units
+       vals
+       (reduce (fn [grid unit]
+                 (assoc-in grid (:yx unit) (case (:type unit)
+                                             :elf "e"
+                                             :goblin "g")))
+               base-grid)))
+
+(defn print-state [state]
+  (print-grid (decorate state)))
 
 (defn highlight [grid [y x]]
   (assoc-in grid [y x] \x))
@@ -162,14 +174,14 @@
        (mapcat (fn [target]
                  ;; FIXME: account for squares taken up
                  ;; by units
-                 (map vector (neighbors (:grid state) (:yx target))
+                 (map vector (neighbors (:base-grid state) (:yx target))
                       (repeat target))))
        (into {})))
 
 (defn attack [state unit target]
   state)
 
-(defn choose-fight [state unit fs]
+(defn move [state unit fs]
   (prn [:choose-fight])
   state)
 
@@ -179,18 +191,18 @@
         _ (prn {:in-range in-range})]
     (if in-range
       (attack state unit in-range)
-      (choose-fight state unit fs))))
+      (move state unit fs))))
 
 (defn test1 []
-  (print-grid (reduce highlight tgrid (find-path* tgrid [2 3] [2 5]))))
+  (print-grid (reduce highlight t-base-grid (find-path* t-base-grid [2 3] [2 5]))))
 
 (defn test2 []
-  (print-grid (reduce highlight t2grid (find-path t2grid [2 3] [2 5]))))
+  (print-grid (reduce highlight t2-base-grid (find-path t2-base-grid [2 3] [2 5]))))
 
 (defn test3 [find-path-fn]
-  (let [path (time (find-path-fn igrid [10 1] [19 30]))]
-    (print-grid (reduce highlight igrid path))
+  (let [path (time (find-path-fn i-base-grid [10 1] [19 30]))]
+    (print-grid (reduce highlight i-base-grid path))
     (prn {:path-length (count path)})))
 
 (defn test4 []
-  (turn tstate (-> tstate :units (get 0))))
+  (turn t-state (-> t-state :units (get 0))))
