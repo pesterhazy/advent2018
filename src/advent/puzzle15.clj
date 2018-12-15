@@ -25,6 +25,12 @@
                     clojure.java.io/reader)]
     (vec (line-seq f))))
 
+(defn read-sample3
+  []
+  (with-open [f (-> "15/sample3.txt"
+                    clojure.java.io/reader)]
+    (vec (line-seq f))))
+
 (defn parse [lines]
   (mapv vec lines))
 
@@ -249,6 +255,12 @@
 
 (defn test4 []
   (let [generations (iterate round t-state)]
+    (->> generations
+         (take 3)
+         (run! print-state))))
+
+(defn test5 []
+  (let [generations (iterate round (-> (read-sample3) parse extract))]
     (->> generations
          (take 3)
          (run! print-state))))
