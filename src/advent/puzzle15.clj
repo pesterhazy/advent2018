@@ -49,6 +49,9 @@
                                            [id (assoc unit :id id)]))
                             (into {}))))))
 
+(def tstate (-> (read-sample) parse extract))
+(def tgrid (:grid tstate))
+
 (defn print-grid [grid]
   (run! println (map str/join grid)))
 
@@ -74,12 +77,16 @@
     (loop []
       (when-not (.isEmpty frontier)
         (let [current (.remove frontier)]
-          (doseq [nxt (neighbors grid current)]
-            (when-not (.containsValue came-from nxt)
-              (.add frontier nxt)
-              (.put came-from nxt current)))
-          (recur))))
+          (when-not (= end current)
+            (doseq [nxt (neighbors grid current)]
+              (when-not (.containsValue came-from nxt)
+                (.add frontier nxt)
+                (.put came-from nxt current)))
+            (recur)))))
     (loop [result (list end)]
       (if (= start (first result))
         result
         (recur (conj result (.get came-from (first result))))))))
+
+(comment
+  (print-grid (reduce highlight tgrid (find-path tgrid [2 3] [2 5]))))
