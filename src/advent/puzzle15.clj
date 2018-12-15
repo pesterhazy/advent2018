@@ -60,7 +60,7 @@
     (update m :units (fn [units]
                        (->> units
                             (map-indexed (fn [id unit]
-                                           [id (assoc unit :id id)]))
+                                           [id (assoc unit :id id :hp 200)]))
                             (into {}))))))
 
 (def t-state (-> (read-sample) parse extract))
@@ -93,6 +93,10 @@
 
 (defn print-state [state & squares]
   (print-grid (reduce highlight (decorate state) squares))
+  (prn (->> state
+            :units
+            vals
+            (map (juxt :id :hp))))
   (println))
 
 (def directions [[-1 0] [0 -1] [1 0] [0 1]])
@@ -185,10 +189,6 @@
                         (repeat target))))
          (into {}))))
 
-(defn attack [state id]
-  (prn [:attack id])
-  state)
-
 (defn move [state unit in-range]
   (let [inhabited-grid (decorate state)
         chosen (->> in-range
@@ -225,6 +225,18 @@
         (update-in state [:units (:id unit)]
                    (fn [unit]
                      (assoc unit :yx (-> candidates first second))))))))
+
+(defn attack [state id]
+  (let [candidates (set (neighbors (:base-grid state) (get-in state [:units id :yx])))
+        ts (->> (targets state (get-in state [:units id]))
+                (filter (comp candidates :yx))
+                (sort-by (juxt :hp :yx)))]
+    (if (empty? ts)
+      state
+      (do
+        (prn [:attack ts])
+        (update-in state [:units (:id (first ts)) :hp]
+                   (fn [hp] (- hp 3)))))))
 
 (defn turn [state id]
   (let [in-range (fights state (get-in state [:units id]))
@@ -264,11 +276,9 @@
 (defn test5 []
   (let [generations (iterate round (-> (read-sample3) parse extract))]
     (->> generations
-         (take 4)
+         (take 2)
          (map-indexed vector)
          (run! (fn [[idx state]]
                  (println)
                  (println "***" idx "***")
                  (print-state state))))))
-
-;; TODO: attack immediately after moving
