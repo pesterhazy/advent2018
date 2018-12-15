@@ -86,6 +86,7 @@
   (assoc-in grid [y x] \x))
 
 (defn print-state [state & squares]
+  (println)
   (print-grid (reduce highlight (decorate state) squares))
   (println))
 
@@ -171,7 +172,8 @@
 (defn fights
   "Returns map of [yx-attack-square unit]"
   [state unit]
-  (let [inhabited-grid (decorate state)]
+  (let [inhabited-grid (-> (decorate state)
+                           (assoc-in (:yx unit) \.))]
     (->> (targets state unit)
          (mapcat (fn [target]
                    (map vector (neighbors inhabited-grid (:yx target))
@@ -213,6 +215,9 @@
 (defn turn-unit [state unit]
   (let [in-range (fights state unit)
         can-attack? (in-range (:yx unit))]
+    (prn {:id (:id unit)
+          :in-range in-range
+          :can-attack? (boolean can-attack?)})
     (if can-attack?
       (attack state unit in-range)
       (move state unit in-range))))
@@ -237,5 +242,5 @@
 (defn test4 []
   (let [generations (iterate turn t-state)]
     (->> generations
-         (take 2)
+         (take 3)
          (run! print-state))))
