@@ -66,7 +66,11 @@
 (def igrid (:grid istate))
 
 (defn print-grid [grid]
-  (run! println (map str/join grid)))
+  (doseq [line grid]
+    (println (str/join (map (fn [c]
+                              (if (= \x c)
+                                "\u001B[32m•\u001B[0m"
+                                c)) line)))))
 
 (defn highlight [grid [x y]]
   (assoc-in grid [y x] \x))
