@@ -78,15 +78,15 @@
        vals
        (reduce (fn [grid unit]
                  (assoc-in grid (:yx unit) (case (:type unit)
-                                             :elf "e"
-                                             :goblin "g")))
+                                             :elf "E"
+                                             :goblin "G")))
                base-grid)))
-
-(defn print-state [state]
-  (print-grid (decorate state)))
 
 (defn highlight [grid [y x]]
   (assoc-in grid [y x] \x))
+
+(defn print-state [state & squares]
+  (print-grid (reduce highlight (decorate state) squares)))
 
 (def directions [[-1 0] [0 -1] [1 0] [0 1]])
 
@@ -181,17 +181,26 @@
 (defn attack [state unit target]
   state)
 
-(defn move [state unit fs]
-  (prn [:choose-fight])
+(defn move [state unit in-range]
+  (prn [:choose-fight
+        (->> in-range
+             (map (fn [[yx target]]
+                    [yx
+                     (:id target)
+                     (some-> (find-path* (:base-grid state)
+                                         (:yx unit)
+                                         yx)
+                             count)])))])
   state)
 
 (defn turn [state unit]
-  (let [fs (fights state unit)
-        in-range (fs (:yx unit))
-        _ (prn {:in-range in-range})]
-    (if in-range
+  (let [in-range (fights state unit)
+        _ (prn [:in-range in-range])
+        can-attack? (in-range (:yx unit))
+        _ (prn {:can-attack? can-attack?})]
+    (if can-attack?
       (attack state unit in-range)
-      (move state unit fs))))
+      (move state unit in-range))))
 
 (defn test1 []
   (print-grid (reduce highlight t-base-grid (find-path* t-base-grid [2 3] [2 5]))))
