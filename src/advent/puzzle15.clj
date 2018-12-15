@@ -1,6 +1,7 @@
 (ns advent.puzzle15
   (:require [clojure.string :as str])
   (:import java.util.LinkedList
+           java.util.PriorityQueue
            java.util.HashMap))
 
 (defn read-input
@@ -89,6 +90,34 @@
   [grid start end]
   (let [frontier (LinkedList.)
         came-from (HashMap.)]
+    (.add frontier start)
+    (.put came-from start nil)
+    (loop []
+      (when-not (.isEmpty frontier)
+        (let [current (.remove frontier)]
+          (when-not (= end current)
+            (doseq [nxt (neighbors grid current)]
+              (when-not (.containsKey came-from nxt)
+                (.add frontier nxt)
+                (.put came-from nxt current)))
+            (recur)))))
+    (when (.containsKey came-from end)
+      (loop [result (list end)]
+        (if (= start (first result))
+          result
+          (recur (conj result (.get came-from (first result)))))))))
+
+(defn priority-queue
+  []
+  (PriorityQueue. (comparator (fn [a b]
+                                (< ^long (first a) ^long (first b))))))
+
+(defn find-path*
+  "A*"
+  [grid start end]
+  (let [frontier (PriorityQueue.)
+        came-from (HashMap.)
+        cost-so-far (HashMap.)]
     (.add frontier start)
     (.put came-from start nil)
     (loop []
