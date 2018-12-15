@@ -182,15 +182,24 @@
   state)
 
 (defn move [state unit in-range]
-  (let [inhabited-grid (decorate state)]
-    (prn [:choose-fight
-          (->> in-range
-               (keep (fn [[yx target]]
-                       (when-let [distance (some-> (find-path* #(neighbors inhabited-grid %)
-                                                               (:yx unit)
-                                                               yx)
-                                                   count)]
-                         [yx (:id target) distance]))))]))
+  (let [inhabited-grid (decorate state)
+        chosen (->> in-range
+                    (keep (fn [[yx target]]
+                            (when-let [distance (some-> (find-path* #(neighbors inhabited-grid %)
+                                                                    (:yx unit)
+                                                                    yx)
+                                                        count)]
+                              [yx distance])))
+                    (reduce (fn [[^long acc-max acc-set :as acc]
+                                 [yx ^long distance]]
+                              (if (<= distance acc-max)
+                                [distance (conj acc-set yx)]
+                                acc))
+                            [Long/MAX_VALUE #{}])
+                    second
+                    sort
+                    first)]
+    (prn [:chosen chosen]))
   state)
 
 (defn turn [state unit]
