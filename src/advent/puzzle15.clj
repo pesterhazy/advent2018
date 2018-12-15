@@ -86,7 +86,8 @@
   (assoc-in grid [y x] \x))
 
 (defn print-state [state & squares]
-  (print-grid (reduce highlight (decorate state) squares)))
+  (print-grid (reduce highlight (decorate state) squares))
+  (println))
 
 (def directions [[-1 0] [0 -1] [1 0] [0 1]])
 
@@ -178,6 +179,7 @@
          (into {}))))
 
 (defn attack [state unit target]
+  (assert false "attack not implemented")
   state)
 
 (defn move [state unit in-range]
@@ -197,21 +199,29 @@
                             [Long/MAX_VALUE #{}])
                     second
                     sort
-                    first)
-        path (find-path* #(neighbors inhabited-grid %)
-                         (:yx unit)
-                         chosen)]
-    (assert path)
-    (update-in state [:units (:id unit)]
-               (fn [unit]
-                 (assoc unit :yx (second path))))))
+                    first)]
+    (if-not chosen
+      state
+      (let [path (find-path* #(neighbors inhabited-grid %)
+                             (:yx unit)
+                             chosen)]
+        (assert path)
+        (update-in state [:units (:id unit)]
+                   (fn [unit]
+                     (assoc unit :yx (second path))))))))
 
-(defn turn [state unit]
+(defn turn-unit [state unit]
   (let [in-range (fights state unit)
         can-attack? (in-range (:yx unit))]
     (if can-attack?
       (attack state unit in-range)
       (move state unit in-range))))
+
+(defn turn [state]
+  (let [ids (-> state :units keys)]
+    (reduce (fn [state id]
+              (turn-unit state (-> state :units (get id))))
+            state ids)))
 
 (defn test1 []
   (print-grid (reduce highlight t-base-grid (find-path* t-base-grid [2 3] [2 5]))))
@@ -225,4 +235,7 @@
     (prn {:path-length (count path)})))
 
 (defn test4 []
-  (print-state (turn t-state (-> t-state :units (get 0)))))
+  (let [generations (iterate turn t-state)]
+    (->> generations
+         (take 2)
+         (run! print-state))))
