@@ -170,13 +170,12 @@
 (defn fights
   "Returns map of [yx-attack-square unit]"
   [state unit]
-  (->> (targets state unit)
-       (mapcat (fn [target]
-                 ;; FIXME: account for squares taken up
-                 ;; by units
-                 (map vector (neighbors (:base-grid state) (:yx target))
-                      (repeat target))))
-       (into {})))
+  (let [inhabited-grid (decorate state)]
+    (->> (targets state unit)
+         (mapcat (fn [target]
+                   (map vector (neighbors inhabited-grid (:yx target))
+                        (repeat target))))
+         (into {}))))
 
 (defn attack [state unit target]
   state)
@@ -198,15 +197,18 @@
                             [Long/MAX_VALUE #{}])
                     second
                     sort
-                    first)]
-    (prn [:chosen chosen]))
-  state)
+                    first)
+        path (find-path* #(neighbors inhabited-grid %)
+                         (:yx unit)
+                         chosen)]
+    (assert path)
+    (update-in state [:units (:id unit)]
+               (fn [unit]
+                 (assoc unit :yx (second path))))))
 
 (defn turn [state unit]
   (let [in-range (fights state unit)
-        _ (prn [:in-range in-range])
-        can-attack? (in-range (:yx unit))
-        _ (prn {:can-attack? can-attack?})]
+        can-attack? (in-range (:yx unit))]
     (if can-attack?
       (attack state unit in-range)
       (move state unit in-range))))
@@ -223,4 +225,4 @@
     (prn {:path-length (count path)})))
 
 (defn test4 []
-  (turn t-state (-> t-state :units (get 0))))
+  (print-state (turn t-state (-> t-state :units (get 0)))))
