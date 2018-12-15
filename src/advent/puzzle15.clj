@@ -113,9 +113,7 @@
   (print-grid (reduce highlight t2grid (find-path t2grid [2 3] [2 5]))))
 
 (defn test3 []
-  (print-grid (-> igrid (highlight [1 10])))
-  (println)
-  (print-grid (reduce highlight igrid (find-path igrid [1 10] [10 10]))))
+  (print-grid (reduce highlight igrid (find-path igrid [1 10] [16 22]))))
 
 (comment
   )
