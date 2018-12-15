@@ -134,7 +134,7 @@
                 (when (or (not (.containsKey cost-so-far nxt))
                           (< new-cost (.get cost-so-far nxt)))
                   (.put cost-so-far nxt new-cost)
-                  (.add frontier [(manhattan end nxt) nxt])
+                  (.add frontier [(+ new-cost (manhattan end nxt)) nxt])
                   (.put came-from nxt current))))
             (recur)))))
     (when (.containsKey came-from end)
@@ -150,7 +150,7 @@
   (print-grid (reduce highlight t2grid (find-path t2grid [2 3] [2 5]))))
 
 (defn test3 [find-path-fn]
-  (let [path (find-path-fn igrid [1 10] [16 22])]
+  (let [path (time (find-path-fn igrid [1 10] [30 19]))]
     (print-grid (reduce highlight igrid path))
     (prn {:path-length (count path)})))
 
