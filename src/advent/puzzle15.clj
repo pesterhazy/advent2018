@@ -1,8 +1,11 @@
 (ns advent.puzzle15
   (:require [clojure.string :as str])
-  (:import java.util.LinkedList
+  (:import (java.util LinkedList Comparator)
            java.util.PriorityQueue
            java.util.HashMap))
+
+(set! *unchecked-math* :warn-on-boxed)
+(set! *warn-on-reflection* true)
 
 (defn read-input
   []
@@ -80,8 +83,8 @@
 (defn point-in [grid [x y]]
   (get-in grid [y x]))
 
-(defn neighbors [grid [x y]]
-  (keep (fn [[dx dy]]
+(defn neighbors [grid [^long x ^long y]]
+  (keep (fn [[^long dx ^long dy]]
           (let [xy [(+ x dx) (+ y dy)]]
             (when (= \. (point-in grid xy))
               xy)))
@@ -90,7 +93,7 @@
 ;; https://www.redblobgames.com/pathfinding/a-star/introduction.html
 
 (defn find-path
-  "Breath-first search"
+  "Breadth-first search"
   [grid start end]
   (let [frontier (LinkedList.)
         came-from (HashMap.)]
@@ -113,10 +116,12 @@
 
 (defn priority-queue
   []
-  (PriorityQueue. (comparator (fn [a b]
-                                (< ^long (first a) ^long (first b))))))
+  (let [cmpr ^Comparator (comparator
+                          (fn [a b]
+                            (< ^long (first a) ^long (first b))))]
+    (PriorityQueue. cmpr)))
 
-(defn manhattan [[y1 x1] [y2 x2]]
+(defn manhattan ^long [[^long y1 ^long x1] [^long y2 ^long x2]]
   (+ (Math/abs (- y1 y2))
      (Math/abs (- x1 x2))))
 
@@ -134,9 +139,9 @@
         (let [current (second (.remove frontier))]
           (when-not (= end current)
             (doseq [nxt (neighbors grid current)]
-              (let [new-cost (inc (.get cost-so-far current))]
+              (let [new-cost (inc ^long (.get cost-so-far current))]
                 (when (or (not (.containsKey cost-so-far nxt))
-                          (< new-cost (.get cost-so-far nxt)))
+                          (< new-cost ^long (.get cost-so-far nxt)))
                   (.put cost-so-far nxt new-cost)
                   (.add frontier [(+ new-cost (manhattan end nxt)) nxt])
                   (.put came-from nxt current))))
