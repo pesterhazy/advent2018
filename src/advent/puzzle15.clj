@@ -199,11 +199,14 @@
                                                                     yx)
                                                         count)]
                               [yx distance])))
-                    (reduce (fn [[^long acc-max acc-set :as acc]
+                    (reduce (fn [[^long acc-minimum acc-set :as acc]
                                  [yx ^long distance]]
-                              (if (<= distance acc-max)
-                                [distance (conj acc-set yx)]
-                                acc))
+                              (cond (< distance acc-minimum)
+                                    [distance #{yx}]
+                                    (= distance acc-minimum)
+                                    [distance (conj acc-set yx)]
+                                    :else
+                                    acc))
                             [Long/MAX_VALUE #{}])
                     second
                     sort
