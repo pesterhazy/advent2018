@@ -92,7 +92,6 @@
   (assoc-in grid [y x] \x))
 
 (defn print-state [state & squares]
-  (println)
   (print-grid (reduce highlight (decorate state) squares))
   (println))
 
@@ -265,7 +264,11 @@
 (defn test5 []
   (let [generations (iterate round (-> (read-sample3) parse extract))]
     (->> generations
-         (take 3)
-         (run! print-state))))
+         (take 4)
+         (map-indexed vector)
+         (run! (fn [[idx state]]
+                 (println)
+                 (println "***" idx "***")
+                 (print-state state))))))
 
 ;; TODO: attack immediately after moving
