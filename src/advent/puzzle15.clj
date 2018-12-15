@@ -162,6 +162,3 @@
   (let [path (time (find-path-fn igrid [1 10] [30 19]))]
     (print-grid (reduce highlight igrid path))
     (prn {:path-length (count path)})))
-
-(comment
-  )
