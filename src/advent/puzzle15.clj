@@ -112,22 +112,30 @@
   (PriorityQueue. (comparator (fn [a b]
                                 (< ^long (first a) ^long (first b))))))
 
+(defn manhattan [[y1 x1] [y2 x2]]
+  (+ (Math/abs (- y1 y2))
+     (Math/abs (- x1 x2))))
+
 (defn find-path*
   "A*"
   [grid start end]
   (let [frontier (PriorityQueue.)
         came-from (HashMap.)
         cost-so-far (HashMap.)]
-    (.add frontier start)
+    (.add frontier [0 start])
     (.put came-from start nil)
+    (.put cost-so-far start 0)
     (loop []
       (when-not (.isEmpty frontier)
-        (let [current (.remove frontier)]
+        (let [current (second (.remove frontier))]
           (when-not (= end current)
             (doseq [nxt (neighbors grid current)]
-              (when-not (.containsKey came-from nxt)
-                (.add frontier nxt)
-                (.put came-from nxt current)))
+              (let [new-cost (inc (.get cost-so-far current))]
+                (when (or (not (.containsKey cost-so-far nxt))
+                          (< new-cost (.get cost-so-far nxt)))
+                  (.put cost-so-far nxt new-cost)
+                  (.add frontier [(manhattan end nxt) nxt])
+                  (.put came-from nxt current))))
             (recur)))))
     (when (.containsKey came-from end)
       (loop [result (list end)]
@@ -136,13 +144,15 @@
           (recur (conj result (.get came-from (first result)))))))))
 
 (defn test1 []
-  (print-grid (reduce highlight tgrid (find-path tgrid [2 3] [2 5]))))
+  (print-grid (reduce highlight tgrid (find-path* tgrid [3 2] [5 2]))))
 
 (defn test2 []
   (print-grid (reduce highlight t2grid (find-path t2grid [2 3] [2 5]))))
 
-(defn test3 []
-  (print-grid (reduce highlight igrid (find-path igrid [1 10] [16 22]))))
+(defn test3 [find-path-fn]
+  (let [path (find-path-fn igrid [1 10] [16 22])]
+    (print-grid (reduce highlight igrid path))
+    (prn {:path-length (count path)})))
 
 (comment
   )
