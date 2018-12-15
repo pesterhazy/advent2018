@@ -96,6 +96,7 @@
   (prn (->> state
             :units
             vals
+            (sort-by :id)
             (map (juxt :id :hp))))
   (println))
 
@@ -276,7 +277,7 @@
 (defn test5 []
   (let [generations (iterate round (-> (read-sample3) parse extract))]
     (->> generations
-         (take 2)
+         (take 8)
          (map-indexed vector)
          (run! (fn [[idx state]]
                  (println)
