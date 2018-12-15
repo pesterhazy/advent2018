@@ -1,5 +1,7 @@
 (ns advent.puzzle15
-  (:require [clojure.string :as str]))
+  (:require [clojure.string :as str])
+  (:import java.util.LinkedList
+           java.util.HashMap))
 
 (defn read-input
   []
@@ -52,3 +54,32 @@
 
 (defn highlight [grid [x y]]
   (assoc-in grid [x y] \x))
+
+(def directions [[-1 0] [0 -1] [1 0] [0 1]])
+
+(defn neighbors [grid [x y]]
+  (keep (fn [[dx dy]]
+          (let [xy [(+ x dx) (+ y dy)]]
+            (when (= \. (get-in grid xy))
+              xy)))
+        directions))
+
+(defn find-path
+  "Breath-first search"
+  [grid start end]
+  (let [frontier (LinkedList.)
+        came-from (HashMap.)]
+    (.add frontier start)
+    (.put came-from start nil)
+    (loop []
+      (when-not (.isEmpty frontier)
+        (let [current (.remove frontier)]
+          (doseq [nxt (neighbors grid current)]
+            (when-not (.containsValue came-from nxt)
+              (.add frontier nxt)
+              (.put came-from nxt current)))
+          (recur))))
+    (loop [result (list end)]
+      (if (= start (first result))
+        result
+        (recur (conj result (.get came-from (first result))))))))
