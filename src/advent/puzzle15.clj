@@ -31,6 +31,12 @@
                     clojure.java.io/reader)]
     (vec (line-seq f))))
 
+(defn read-sample4
+  []
+  (with-open [f (-> "15/sample4.txt"
+                    clojure.java.io/reader)]
+    (vec (line-seq f))))
+
 (defn parse [lines]
   (mapv vec lines))
 
@@ -233,17 +239,17 @@
                      (assoc unit :yx (-> candidates first second))))))))
 
 (defn attack [state id]
-  (let [ts* (targets state (get-in state [:units id]))
-        _ (when (empty? ts*)
-            (println "No target left, id:" id))
-        candidates (set (neighbors (:base-grid state) (get-in state [:units id :yx])))
-        ts (->> ts*
-                (filter (comp candidates :yx))
-                (sort-by (juxt :hp :yx)))]
-    (if (empty? ts)
-      state
-      (update-in state [:units (:id (first ts)) :hp]
-                 (fn [^long hp] (- hp 3))))))
+  (let [ts* (targets state (get-in state [:units id]))]
+    (if (empty? ts*)
+      (assoc state :done? true)
+      (let [candidates (set (neighbors (:base-grid state) (get-in state [:units id :yx])))
+            ts (->> ts*
+                    (filter (comp candidates :yx))
+                    (sort-by (juxt :hp :yx)))]
+        (if (empty? ts)
+          state
+          (update-in state [:units (:id (first ts)) :hp]
+                     (fn [^long hp] (- hp 3))))))))
 
 (defn turn [state id]
   (let [unit (get-in state [:units id])]
@@ -260,11 +266,19 @@
   (->> state
        :units
        vals
+       (sort-by :yx)
        (map :id)
-       sort
        (reduce (fn [state id]
                  (turn state id))
                state)))
+
+(defn outcome [state]
+  (->> state
+       :units
+       vals
+       (remove dead?)
+       (map :hp)
+       (reduce +)))
 
 (defn test1 []
   (print-grid (reduce highlight t-base-grid (find-path* t-base-grid [2 3] [2 5]))))
@@ -292,3 +306,16 @@
                  (println)
                  (println "***" idx "***")
                  (print-state state))))))
+
+(defn test6 []
+  (let [generations (iterate round (-> (read-sample4) parse extract))
+        generations* (->> generations
+                          (take-while #(not (:done? %))))]
+    (->> generations*
+         (map-indexed vector)
+         (run! (fn [[idx state]]
+                 (println)
+                 (println "***" idx "***")
+                 (print-state state))))
+    (prn (* (dec (count generations*))
+            ^long (outcome (last generations*))))))
