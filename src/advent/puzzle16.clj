@@ -145,7 +145,9 @@ After:\s+\[(\d+),\s+(\d+),\s+(\d+),\s+(\d+)\]\s*")
 
   Useful for calling a test function in a terminal REPL whenever
   the namespace is re-evaluated from a different thread, such
-  as an nREPL connection"
+  as an nREPL connection. e.g.:
+
+  (wait solution-2)"
   [fun]
   (.clear bq)
   (prn (fun))
