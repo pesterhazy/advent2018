@@ -132,3 +132,23 @@ After:\s+\[(\d+),\s+(\d+),\s+(\d+),\s+(\d+)\]\s*")
          (map #(update % :opcode opcode->op))
          (reduce apply-op [0 0 0 0])
          first)))
+
+(defn again []
+  (prn 1234))
+
+(defonce bq (java.util.concurrent.LinkedBlockingQueue.))
+
+(defn wait []
+  (.clear bq)
+  (loop []
+    (if (.poll bq)
+      nil
+      (let [n (.available System/in)]
+        (if (> n 0)
+          (read-line)
+          (do
+            (Thread/sleep 100)
+            (recur))))))
+  nil)
+
+(.add bq true)
