@@ -7,6 +7,8 @@
 (set! *unchecked-math* :warn-on-boxed)
 (set! *warn-on-reflection* true)
 
+(def ^:dynamic *elf-attack-power* 3)
+
 (defn read-input
   []
   (with-open [f (-> "15/input.txt"
@@ -239,7 +241,8 @@
                      (assoc unit :yx (-> candidates first second))))))))
 
 (defn attack [state id]
-  (let [ts* (targets state (get-in state [:units id]))]
+  (let [unit (get-in state [:units id])
+        ts* (targets state unit)]
     (if (empty? ts*)
       (assoc state :done? true)
       (let [candidates (set (neighbors (:base-grid state) (get-in state [:units id :yx])))
@@ -249,7 +252,9 @@
         (if (empty? ts)
           state
           (update-in state [:units (:id (first ts)) :hp]
-                     (fn [^long hp] (- hp 3))))))))
+                     (fn [^long hp] (- hp (if (= :elf (:type unit))
+                                            ^long *elf-attack-power*
+                                            3)))))))))
 
 (defn turn [state id]
   (let [unit (get-in state [:units id])]
@@ -333,3 +338,23 @@
     (prn (* (dec (count generations*))
             ;; run another, final round to update HPs
             ^long (outcome (round (last generations*)))))))
+
+(defn casualties [state]
+  (->> state
+       :units
+       vals
+       (remove (comp #{:goblin} :type))
+       (remove (comp pos? :hp))
+       count))
+
+(defn solution-2 []
+  (let [generations (iterate round (-> (read-input) parse extract))
+        generations* (->> generations
+                          (take-while #(not (:done? %))))]
+    #_(->> generations*
+           (map-indexed vector)
+           (run! (fn [[idx state]]
+                   (println)
+                   (println "***" idx "***")
+                   (print-state state))))
+    (prn (casualties (round (last generations*))))))
