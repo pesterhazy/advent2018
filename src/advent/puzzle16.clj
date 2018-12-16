@@ -133,17 +133,26 @@ After:\s+\[(\d+),\s+(\d+),\s+(\d+),\s+(\d+)\]\s*")
          (reduce apply-op [0 0 0 0])
          first)))
 
-(defn again []
-  585)
+;; REPL stuff; ignore.
 
 (defonce bq (java.util.concurrent.LinkedBlockingQueue.))
 
-(defn wait []
+(defn wait
+  "Wait on blocking queue for invocations. When new
+  value becomes available, remove and re-run fun.
+
+  User can end the loop by pressing return.
+
+  Useful for calling a test function in a terminal REPL whenever
+  the namespace is re-evaluated from a different thread, such
+  as an nREPL connection"
+  [fun]
   (.clear bq)
+  (prn (fun))
   (loop []
     (if (.poll bq)
       (do
-        (prn (again))
+        (prn (fun))
         (recur))
       (let [n (.available System/in)]
         (if (> n 0)
@@ -152,5 +161,8 @@ After:\s+\[(\d+),\s+(\d+),\s+(\d+),\s+(\d+)\]\s*")
             (Thread/sleep 100)
             (recur))))))
   nil)
+
+;; When ns gets reloaded via nREPL, trigger new call
+;; of function passed to wait
 
 (.add bq true)
