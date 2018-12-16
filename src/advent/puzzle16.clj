@@ -40,7 +40,12 @@ After:\s+\[(\d+),\s+(\d+),\s+(\d+),\s+(\d+)\]\s*")
     {:patterns (->> part1
                     (partition-all 4)
                     (map match))
-     :extra part2}))
+     :instructions (->> part2
+                        (drop-while str/blank?)
+                        (mapv (fn [line]
+                                (->> (str/split line #"\s+")
+                                     (mapv #(Long/parseLong %))
+                                     (zipmap [:opcode :a :b :c])))))}))
 
 (def i-data (process-input (read-input)))
 
@@ -53,7 +58,7 @@ After:\s+\[(\d+),\s+(\d+),\s+(\d+),\s+(\d+)\]\s*")
 (defn eq [a b] (if (= a b) 1 0))
 
 (defn apply-op
-  [regs {:keys [opcode a b c]}]
+  [regs {:keys [opcode a b c] :as op}]
   (case opcode
     :addr (assoc regs c (+ (regs a) (regs b)))
     :addi (assoc regs c (+ (regs a) b))
@@ -123,5 +128,6 @@ After:\s+\[(\d+),\s+(\d+),\s+(\d+),\s+(\d+)\]\s*")
 
 (defn solution-2 []
   (let [opcode->op (find-mapping (:patterns i-data))]
-    opcode->op
-    ))
+    (->> (:instructions i-data)
+         (map #(update % :opcode opcode->op))
+         (reduce apply-op [0 0 0 0]))))
