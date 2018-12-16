@@ -319,3 +319,17 @@
                  (print-state state))))
     (prn (* (dec (count generations*))
             ^long (outcome (last generations*))))))
+
+(defn solution-1 []
+  (let [generations (iterate round (-> (read-input) parse extract))
+        generations* (->> generations
+                          (take-while #(not (:done? %))))]
+    (->> generations*
+         (map-indexed vector)
+         (run! (fn [[idx state]]
+                 (println)
+                 (println "***" idx "***")
+                 (print-state state))))
+    (prn (* (dec (count generations*))
+            ;; run another, final round to update HPs
+            ^long (outcome (round (last generations*)))))))
