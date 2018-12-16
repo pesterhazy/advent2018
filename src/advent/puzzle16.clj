@@ -1,5 +1,6 @@
 (ns advent.puzzle16
-  (:require [clojure.string :as str]))
+  (:require [clojure.string :as str]
+            [clojure.set :as set]))
 
 (defn read-sample
   []
@@ -90,3 +91,34 @@ After:\s+\[(\d+),\s+(\d+),\s+(\d+),\s+(\d+)\]\s*")
                            count)]
     {:n-patterns (count patterns)
      :three-or-more three-or-more}))
+
+(defn solution-2 []
+  (let [patterns (:patterns i-data)
+        opcode->ops (->> patterns
+                         (reduce (fn [acc-map pattern]
+                                   (let [candidates (try-pattern pattern)]
+                                     (update acc-map (-> pattern :op :opcode)
+                                             (fn [old-candidates]
+                                               (if old-candidates
+                                                 (set/intersection old-candidates candidates)
+                                                 candidates)))))
+                                 {}))]
+    (loop [mapping {}
+           opcode->ops opcode->ops]
+      (let [new-mapping (->> opcode->ops
+                             (keep (fn [[opcode ops]]
+                                     (when (= 1 (count ops))
+                                       [opcode (first ops)])))
+                             (into mapping))
+            new-opcode->ops (let [done (->> mapping
+                                            vals
+                                            set)]
+                              (->> opcode->ops
+                                   (map (fn [[opcode ops]]
+                                          [opcode (set/difference ops done)]))
+                                   (filter (fn [[_ ops]]
+                                             (seq ops)))))]
+        (if (seq new-opcode->ops)
+          (recur new-mapping
+                 new-opcode->ops)
+          new-mapping)))))
