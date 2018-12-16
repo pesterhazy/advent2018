@@ -37,7 +37,7 @@ After:\s+\[(\d+),\s+(\d+),\s+(\d+),\s+(\d+)\]\s*")
                                          (or (not= "" a) (not= "" b))))
                            (mapv (partial map first)))]
     {:patterns (->> part1
-                    (partition 4)
+                    (partition-all 4)
                     (map match))
      :extra part2}))
 
