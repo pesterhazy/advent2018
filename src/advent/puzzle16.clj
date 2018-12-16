@@ -24,10 +24,27 @@ After:\s+\[(\d+),\s+(\d+),\s+(\d+),\s+(\d+)\]")
 (def t-data (read-sample))
 (def t-pattern (match (read-sample)))
 
+(def opcodes
+  [:addr
+   :addi
+   :mulr
+   :muli
+   ])
+
 (defn apply-op [regs {:keys [opcode a b c]}]
   (case opcode
-    :mulr (assoc regs c (* (regs a) (regs b)))))
+    :addr (assoc regs c (+ (regs a) (regs b)))
+    :addi (assoc regs c (+ (regs a) b))
+    :mulr (assoc regs c (* (regs a) (regs b)))
+    :muli (assoc regs c (* (regs a) b))))
 
-(defn try-pattern [pattern substitute]
+(defn try-pattern-one [pattern substitute]
   (= (apply-op (:before pattern) (assoc (:op pattern) :opcode substitute))
      (:after pattern)))
+
+(defn try-pattern [pattern]
+  (->> opcodes
+       (keep (fn [opcode]
+               (when (try-pattern-one pattern opcode)
+                 opcode)))
+       set))
