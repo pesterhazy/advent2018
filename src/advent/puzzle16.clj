@@ -7,11 +7,17 @@
                     clojure.java.io/reader)]
     (vec (line-seq f))))
 
+(defn read-input
+  []
+  (with-open [f (-> "16/input.txt"
+                    clojure.java.io/reader)]
+    (vec (line-seq f))))
+
 (def regex
   #"(?x)
 Before:\s+\[(\d+),\s+(\d+),\s+(\d+),\s+(\d+)\]\n
 (\d+)\s+(\d+)\s+(\d+)\s+(\d+)\n
-After:\s+\[(\d+),\s+(\d+),\s+(\d+),\s+(\d+)\]")
+After:\s+\[(\d+),\s+(\d+),\s+(\d+),\s+(\d+)\]\s*")
 
 (defn match
   [lines]
@@ -23,8 +29,19 @@ After:\s+\[(\d+),\s+(\d+),\s+(\d+),\s+(\d+)\]")
              (zipmap [:before :op :after]))
         (update :op (partial zipmap [:opcode :a :b :c])))))
 
-(def t-data (read-sample))
-(def t-pattern (match (read-sample)))
+(defn process-input
+  [lines]
+  (let [[part1 part2] (->> (read-input)
+                           (partition-all 2 1)
+                           (split-with (fn [[a b]]
+                                         (or (not= "" a) (not= "" b))))
+                           (mapv (partial map first)))]
+    {:patterns (->> part1
+                    (partition 4)
+                    (map match))
+     :extra part2}))
+
+(def i-data (process-input (read-input)))
 
 (def opcodes
   [:addr :addi :mulr :muli :banr :bani :borr :bori :setr :seti :gtir :gtri :gtrr
