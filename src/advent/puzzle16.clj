@@ -130,4 +130,5 @@ After:\s+\[(\d+),\s+(\d+),\s+(\d+),\s+(\d+)\]\s*")
   (let [opcode->op (find-mapping (:patterns i-data))]
     (->> (:instructions i-data)
          (map #(update % :opcode opcode->op))
-         (reduce apply-op [0 0 0 0]))))
+         (reduce apply-op [0 0 0 0])
+         first)))
