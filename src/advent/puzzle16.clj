@@ -134,7 +134,7 @@ After:\s+\[(\d+),\s+(\d+),\s+(\d+),\s+(\d+)\]\s*")
          first)))
 
 (defn again []
-  (prn 1234))
+  585)
 
 (defonce bq (java.util.concurrent.LinkedBlockingQueue.))
 
@@ -142,7 +142,9 @@ After:\s+\[(\d+),\s+(\d+),\s+(\d+),\s+(\d+)\]\s*")
   (.clear bq)
   (loop []
     (if (.poll bq)
-      nil
+      (do
+        (prn (again))
+        (recur))
       (let [n (.available System/in)]
         (if (> n 0)
           (read-line)
