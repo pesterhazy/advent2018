@@ -81,3 +81,12 @@ After:\s+\[(\d+),\s+(\d+),\s+(\d+),\s+(\d+)\]\s*")
   (->> opcodes
        (keep (fn [opcode] (when (try-pattern-one pattern opcode) opcode)))
        set))
+
+(defn solution-1 []
+  (let [patterns (:patterns i-data)
+        three-or-more (->> patterns
+                           (map (comp count try-pattern))
+                           (filter #(>= % 3))
+                           count)]
+    {:n-patterns (count patterns)
+     :three-or-more three-or-more}))
