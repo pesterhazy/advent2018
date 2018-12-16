@@ -347,14 +347,21 @@
        (remove (comp pos? :hp))
        count))
 
+(defn simulation
+  "Returns outcome of simulation"
+  [elf-attack-power]
+  (binding [*elf-attack-power* elf-attack-power]
+    (->> (iterate round (-> (read-input) parse extract))
+         (map-indexed vector)
+         (some (fn [[^long idx state]]
+                 (when (:done? state)
+                   [(casualties state) (* (dec idx) ^long (outcome state))]))))))
+
 (defn solution-2 []
-  (let [generations (iterate round (-> (read-input) parse extract))
-        generations* (->> generations
-                          (take-while #(not (:done? %))))]
-    #_(->> generations*
-           (map-indexed vector)
-           (run! (fn [[idx state]]
-                   (println)
-                   (println "***" idx "***")
-                   (print-state state))))
-    (prn (casualties (round (last generations*))))))
+  (reduce (fn [_ eap]
+            (let [[^long cs oc] (simulation eap)]
+              (prn eap cs oc)
+              (when (zero? cs)
+                (reduced [cs oc]))))
+          nil
+          (range 16 32)))
