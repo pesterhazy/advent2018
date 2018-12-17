@@ -1,4 +1,5 @@
-(ns advent.puzzle17)
+(ns advent.puzzle17
+  (:import java.util.HashSet))
 
 (defn read-sample
   []
@@ -120,7 +121,7 @@
 ;; https://www.reddit.com/r/adventofcode/comments/a6wpup/2018_day_17_solutions/ebyq6mj/
 
 (defn solution-1 []
-  (let [walls (->> (read-input)
+  (let [walls (->> (read-sample)
                    (mapv parse))
         puzzle-min-y (min-y walls)
         puzzle-max-y (max-y walls)
@@ -128,11 +129,12 @@
         settled (HashSet.)
         flowing (HashSet.)
         visit (fn visit [[y x :as yx] dir]
+                (prn [:visit yx dir])
                 (let [below [(inc y) x]]
                   (when (and (not (clay? below))
                              (not (.contains flowing below))
                              (<= puzzle-min-y (first below) puzzle-max-y))
-                    (visit below))
+                    (visit below :down))
                   (if (and (not (clay? below))
                            (not (.contains settled below)))
                     false
@@ -144,26 +146,34 @@
                           right-filled (or (clay? right)
                                            (and (not (.contains flowing right))
                                                 (visit right :right)))]
-                      (when (and (= :down dir)
-                                 left-filled
-                                 right-filled)
-                        (.add settled yx)
-                        ;; FIXME: assign left
-                        (loop [ptr left]
-                          (when (.contains flowing ptr)
-                            (.add settled ptr)
-                            (recur [(first ptr) (dec (second ptr))])))
-                        (loop [ptr right]
-                          (when (.contains flowing ptr)
-                            (.add settled ptr)
-                            (recur [(first ptr) (dec (second ptr))])))
+                      (cond
+                        (and (= :down dir)
+                             left-filled
+                             right-filled)
+                        (do
+                          (.add settled yx)
+                          (loop [ptr left]
+                            (when (.contains flowing ptr)
+                              (.add settled ptr)
+                              (recur [(first ptr) (dec (second ptr))])))
+                          (loop [ptr right]
+                            (when (.contains flowing ptr)
+                              (.add settled ptr)
+                              (recur [(first ptr) (dec (second ptr))])))
+                          false)
 
-                        )
-                      )))
+                        (= :left dir)
+                        (or left-filled (clay? left))
 
-                )]
+                        (= :right dir)
+                        (or right-filled (clay? right))
+
+                        :else
+                        false)))))]
     (try
       (visit [0 500] :down)
+      (prn (.size settled))
+      (prn (.size flowing))
       (catch Exception e
         (if (-> e ex-data :exceeded)
           (do
