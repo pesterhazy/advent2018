@@ -61,7 +61,7 @@
                    yx))
         visit (fn visit
                 [[y x :as yx]]
-                (if (> y puzzle-max-y)
+                (if (not (<= puzzle-min-y y puzzle-max-y))
                   false
                   (let [_ (when-not (< (vswap! !count inc) 1000000)
                             (throw (ex-info "Exceeded max" {:exceeded true})))
@@ -79,7 +79,7 @@
                         (and left-settled right-settled))
                       false))))]
     (try
-      (visit (update origin 0 inc))
+      (visit [puzzle-min-y 500])
       (->> @!visited
            (filter (fn [[y _]]
                      (<= puzzle-min-y y puzzle-max-y)))
