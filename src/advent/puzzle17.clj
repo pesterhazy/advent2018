@@ -49,19 +49,15 @@
     yx))
 
 (defn solution-1 []
-  (let [walls (->> (read-input)
+  (let [walls (->> (read-sample)
                    (mapv parse))
         puzzle-min-y (min-y walls)
         puzzle-max-y (max-y walls)
         !count (volatile! 0)
         !visited (volatile! #{})
         !settled (volatile! {})
-        can-go (fn [[y x :as yx]]
-                 (when (and (free? walls [(inc y) x])
-                            (not (@!visited yx)))
-                   yx))
         visit (fn visit
-                [[y x :as yx]]
+                [[y x :as yx] dir]
                 (let [settled (if (not (<= puzzle-min-y y puzzle-max-y))
                                 false
                                 (let [_ (when-not (< (vswap! !count inc) 1000000)
@@ -75,24 +71,44 @@
                                                        (assert (contains? @!settled [(inc y) x]))
                                                        (@!settled [(inc y) x]))
                                                      :else
-                                                     (visit [(inc y) x]))]
+                                                     (visit [(inc y) x] :down))]
                                   (if down-settled
-                                    (let [left-settled (if (can-go [y (dec x)])
-                                                         (visit [y (dec x)])
-                                                         true)
-                                          right-settled (if (can-go [y (inc x)])
-                                                          (visit [y (inc x)])
-                                                          true)]
+                                    (let [left-settled (cond
+                                                         (= dir :right)
+                                                         true
+                                                         (not (free? walls [y (dec x)]))
+                                                         true
+                                                         (@!visited [y (dec x)])
+                                                         (do
+                                                           (assert (contains? @!settled [y (dec x)]))
+                                                           (get @!settled [y (dec x)]))
+                                                         :else
+                                                         (visit [y (dec x)] :left))
+
+                                          right-settled (cond
+                                                          (= dir :left)
+                                                          true
+                                                          (not (free? walls [y (inc x)]))
+                                                          true
+                                                          (@!visited [y (inc x)])
+                                                          (do
+                                                            (assert (contains? @!settled [y (inc x)]))
+                                                            (get @!settled [y (inc x)]))
+                                                          :else
+                                                          (visit [y (inc x)] :right))]
                                       (and left-settled right-settled))
                                     false)))]
                   (vswap! !settled assoc yx settled)
                   settled))]
     (try
-      (visit [puzzle-min-y 500])
-      (->> @!visited
-           (filter (fn [[y _]]
-                     (<= puzzle-min-y y puzzle-max-y)))
-           count)
+      (visit [puzzle-min-y 500] :down)
+      (let [result (->> @!visited
+                        sort)]
+        #_(prn result)
+        #_(prn (->> (group-by first result)
+                    sort
+                    (map (fn [[k v]] [k (count v)]))))
+        (prn (count result)))
       (catch Exception e
         (if (-> e ex-data :exceeded)
           (do
