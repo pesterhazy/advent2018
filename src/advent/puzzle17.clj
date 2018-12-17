@@ -32,6 +32,14 @@
                 v1)))
        (apply max)))
 
+(defn min-y [walls]
+  (->> walls
+       (map (fn [{:keys [k1 v1 v2-start v2-end]}]
+              (if (= k1 "x")
+                (max v2-start v2-end)
+                v1)))
+       (apply min)))
+
 (defn free? [walls [y x :as yx]]
   (when (not (some (fn [{:keys [k1 v1 v2-start v2-end]}]
                      (if (= k1 "x")
@@ -43,7 +51,8 @@
 (defn solution-1 []
   (let [walls (->> (read-input)
                    (mapv parse))
-        my (max-y walls)
+        puzzle-min-y (min-y walls)
+        puzzle-max-y (max-y walls)
         !count (volatile! 0)
         !visited (volatile! #{})
         can-go (fn [[y x :as yx]]
@@ -52,7 +61,7 @@
                    yx))
         visit (fn visit
                 [[y x :as yx]]
-                (if (> y my)
+                (if (> y puzzle-max-y)
                   false
                   (let [_ (when-not (< (vswap! !count inc) 1000000)
                             (throw (ex-info "Exceeded max" {:exceeded true})))
@@ -71,7 +80,10 @@
                       false))))]
     (try
       (visit (update origin 0 inc))
-      (count @!visited)
+      (->> @!visited
+           (filter (fn [[y _]]
+                     (<= puzzle-min-y y puzzle-max-y)))
+           count)
       (catch Exception e
         (if (-> e ex-data :exceeded)
           (do
