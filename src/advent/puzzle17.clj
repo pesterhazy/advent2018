@@ -39,13 +39,12 @@
                 v1)))
        (apply min)))
 
-(defn free? [walls [y x :as yx]]
-  (when (not (some (fn [{:keys [k1 v1 v2-start v2-end]}]
-                     (if (= k1 "x")
-                       (and (= x v1) (<= v2-start y v2-end))
-                       (and (= y v1) (<= v2-start x v2-end))))
-                   walls))
-    yx))
+(defn is-clay? [walls [y x :as yx]]
+  (some (fn [{:keys [k1 v1 v2-start v2-end]}]
+          (if (= k1 "x")
+            (and (= x v1) (<= v2-start y v2-end))
+            (and (= y v1) (<= v2-start x v2-end))))
+        walls))
 
 #_(defn solution-1 []
     (let [walls (->> (read-input)
@@ -117,15 +116,51 @@
               nil)
             (throw e))))))
 
+;; h/t
+;; https://www.reddit.com/r/adventofcode/comments/a6wpup/2018_day_17_solutions/ebyq6mj/
+
 (defn solution-1 []
   (let [walls (->> (read-input)
                    (mapv parse))
         puzzle-min-y (min-y walls)
         puzzle-max-y (max-y walls)
+        clay? #(is-clay? walls %)
         settled (HashSet.)
         flowing (HashSet.)
-        visit (fn visit
-                [[y x :as yx] dir]
+        visit (fn visit [[y x :as yx] dir]
+                (let [below [(inc y) x]]
+                  (when (and (not (clay? below))
+                             (not (.contains flowing below))
+                             (<= puzzle-min-y (first below) puzzle-max-y))
+                    (visit below))
+                  (if (and (not (clay? below))
+                           (not (.contains settled below)))
+                    false
+                    (let [left [y (dec x)]
+                          right [y (inc x)]
+                          left-filled (or (clay? left)
+                                          (and (not (.contains flowing left))
+                                               (visit left :left)))
+                          right-filled (or (clay? right)
+                                           (and (not (.contains flowing right))
+                                                (visit right :right)))]
+                      (when (and (= :down dir)
+                                 left-filled
+                                 right-filled)
+                        (.add settled yx)
+                        ;; FIXME: assign left
+                        (loop [ptr left]
+                          (when (.contains flowing ptr)
+                            (.add settled ptr)
+                            (recur [(first ptr) (dec (second ptr))])))
+                        (loop [ptr right]
+                          (when (.contains flowing ptr)
+                            (.add settled ptr)
+                            (recur [(first ptr) (dec (second ptr))])))
+
+                        )
+                      )))
+
                 )]
     (try
       (visit [0 500] :down)
