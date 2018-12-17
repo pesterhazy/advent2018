@@ -47,38 +47,25 @@
         visit (fn visit
                 [[y x :as yx]]
                 (if (> y my)
-                  (do
-                    (prn [:out-of-bounds yx])
-                    false)
+                  false
                   (let [_ (when-not (< (vswap! !count inc) 60)
                             (throw (ex-info "Exceeded max" {:exceeded true})))
                         _ (vswap! !visited conj yx)
                         down-settled (if (can-go [(inc y) x])
-                                       (let [_ (prn [yx :down true])
-                                             down-settled (visit [(inc y) x])]
-                                         (prn [yx :down-done down-settled])
-                                         down-settled)
+                                       (visit [(inc y) x])
                                        true)]
                     (if down-settled
                       (let [left-settled (if (can-go [y (dec x)])
-                                           (do
-                                             (prn [yx :left true])
-                                             (visit [y (dec x)]))
-                                           (do
-                                             (prn [yx :left false])
-                                             true))
+                                           (visit [y (dec x)])
+                                           true)
                             right-settled (if (can-go [y (inc x)])
-                                            (do
-                                              (prn [yx :right true])
-                                              (visit [y (inc x)]))
-                                            (do
-                                              (prn [yx :right false])
-                                              true))]
+                                            (visit [y (inc x)])
+                                            true)]
                         (and left-settled right-settled))
                       false))))]
     (try
       (visit (update origin 0 inc))
-      (prn (count @!visited))
+      (count @!visited)
       (catch Exception e
         (if (-> e ex-data :exceeded)
           (do
