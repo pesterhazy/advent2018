@@ -48,8 +48,8 @@
                        (fn [[y x :as yx]]
                          (vswap! !visited conj yx)
                          (->> [(viable? [(inc y) x])
-                               (viable? [y (dec x)])
-                               (viable? [y (inc x)])]
+                               (when (< y my) (viable? [y (dec x)]))
+                               (when (< y my) (viable? [y (inc x)]))]
                               (keep identity)))
                        origin)
              (take 100)
