@@ -55,29 +55,38 @@
         puzzle-max-y (max-y walls)
         !count (volatile! 0)
         !visited (volatile! #{})
+        !settled (volatile! {})
         can-go (fn [[y x :as yx]]
                  (when (and (free? walls [(inc y) x])
                             (not (@!visited yx)))
                    yx))
         visit (fn visit
                 [[y x :as yx]]
-                (if (not (<= puzzle-min-y y puzzle-max-y))
-                  false
-                  (let [_ (when-not (< (vswap! !count inc) 1000000)
-                            (throw (ex-info "Exceeded max" {:exceeded true})))
-                        _ (vswap! !visited conj yx)
-                        down-settled (if (can-go [(inc y) x])
-                                       (visit [(inc y) x])
-                                       true)]
-                    (if down-settled
-                      (let [left-settled (if (can-go [y (dec x)])
-                                           (visit [y (dec x)])
-                                           true)
-                            right-settled (if (can-go [y (inc x)])
-                                            (visit [y (inc x)])
-                                            true)]
-                        (and left-settled right-settled))
-                      false))))]
+                (let [settled (if (not (<= puzzle-min-y y puzzle-max-y))
+                                false
+                                (let [_ (when-not (< (vswap! !count inc) 1000000)
+                                          (throw (ex-info "Exceeded max" {:exceeded true})))
+                                      _ (vswap! !visited conj yx)
+                                      down-settled (cond
+                                                     (not (free? walls [(inc y) x]))
+                                                     true
+                                                     (@!visited [(inc y) x])
+                                                     (do
+                                                       (assert (contains? @!settled [(inc y) x]))
+                                                       (@!settled [(inc y) x]))
+                                                     :else
+                                                     (visit [(inc y) x]))]
+                                  (if down-settled
+                                    (let [left-settled (if (can-go [y (dec x)])
+                                                         (visit [y (dec x)])
+                                                         true)
+                                          right-settled (if (can-go [y (inc x)])
+                                                          (visit [y (inc x)])
+                                                          true)]
+                                      (and left-settled right-settled))
+                                    false)))]
+                  (vswap! !settled assoc yx settled)
+                  settled))]
     (try
       (visit [puzzle-min-y 500])
       (->> @!visited
