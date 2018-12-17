@@ -49,7 +49,7 @@
     yx))
 
 (defn solution-1 []
-  (let [walls (->> (read-sample)
+  (let [walls (->> (read-input)
                    (mapv parse))
         puzzle-min-y (min-y walls)
         puzzle-max-y (max-y walls)
