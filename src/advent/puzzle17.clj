@@ -1,5 +1,4 @@
-(ns advent.puzzle17
-  (:require [clojure.string :as str]))
+(ns advent.puzzle17)
 
 (defn read-sample
   []
@@ -58,7 +57,7 @@
         !settled (volatile! {})
         visit (fn visit
                 [[y x :as yx] dir]
-                (let [settled (if (not (<= puzzle-min-y y puzzle-max-y))
+                (let [settled (if (not (<= y puzzle-max-y))
                                 false
                                 (let [_ (when-not (< (vswap! !count inc) 1000000)
                                           (throw (ex-info "Exceeded max" {:exceeded true})))
@@ -69,6 +68,7 @@
                                                      (@!visited [(inc y) x])
                                                      (do
                                                        (assert (contains? @!settled [(inc y) x]))
+                                                       #_(prn [:revisit :down [(inc y) x]])
                                                        (@!settled [(inc y) x]))
                                                      :else
                                                      (visit [(inc y) x] :down))]
@@ -79,9 +79,11 @@
                                                          (not (free? walls [y (dec x)]))
                                                          true
                                                          (@!visited [y (dec x)])
-                                                         (do
-                                                           (assert (contains? @!settled [y (dec x)]))
-                                                           (get @!settled [y (dec x)]))
+                                                         true
+                                                         #_(do
+                                                             (assert (contains? @!settled [y (dec x)]))
+                                                             (assert false "revisit-left")
+                                                             (get @!settled [y (dec x)]))
                                                          :else
                                                          (visit [y (dec x)] :left))
 
@@ -91,9 +93,11 @@
                                                           (not (free? walls [y (inc x)]))
                                                           true
                                                           (@!visited [y (inc x)])
-                                                          (do
-                                                            (assert (contains? @!settled [y (inc x)]))
-                                                            (get @!settled [y (inc x)]))
+                                                          true
+                                                          #_(do
+                                                              (assert (contains? @!settled [y (inc x)]))
+                                                              (assert false "revisit-right")
+                                                              (get @!settled [y (inc x)]))
                                                           :else
                                                           (visit [y (inc x)] :right))]
                                       (and left-settled right-settled))
@@ -101,13 +105,9 @@
                   (vswap! !settled assoc yx settled)
                   settled))]
     (try
-      (visit [puzzle-min-y 500] :down)
+      (visit [0 500] :down)
       (let [result (->> @!visited
-                        sort)]
-        #_(prn result)
-        #_(prn (->> (group-by first result)
-                    sort
-                    (map (fn [[k v]] [k (count v)]))))
+                        (filter (fn [[y _]] (<= puzzle-min-y y puzzle-max-y))))]
         (prn (count result)))
       (catch Exception e
         (if (-> e ex-data :exceeded)
