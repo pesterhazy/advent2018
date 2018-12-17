@@ -91,12 +91,10 @@
             nil)
           (throw e))))))
 
-(defn again []
-  (solution-1)
-  )
-
-
 ;; REPL stuff; ignore.
+
+(defn again []
+  (solution-1))
 
 (defonce bq (java.util.concurrent.LinkedBlockingQueue.))
 
