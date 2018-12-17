@@ -18,16 +18,44 @@
 
 (def origin [0 500])
 
+(defn max-y [walls]
+  (->> walls
+       (map (fn [{:keys [k1 v1 v2-start v2-end]}]
+              (if (= k1 "x")
+                (max v2-start v2-end)
+                v1)))
+       (apply max)))
+
+(defn free? [walls [y x :as yx]]
+  (when (not (some (fn [{:keys [k1 v1 v2-start v2-end]}]
+                     (if (= k1 "x")
+                       (and (= x v1) (<= v2-start y v2-end))
+                       (and (= y v1) (<= v2-start x v2-end))))
+                   walls))
+    yx))
 
 (defn again []
-  (let [walls (->> (read-sample)
-                   (mapv parse))]
-    (tree-seq (fn [[y x]]
-                (< y 5))
-              (fn [[y x]]
-                ;; only one child
-                [[(inc y) x]])
-              origin)))
+  (let [!visited (volatile! #{})
+        walls (->> (read-sample)
+                   (mapv parse))
+        my (max-y walls)
+        viable? (fn [[y :as yx]]
+                  (when (and (<= y my) (free? walls yx) (not (@!visited yx)))
+                    yx))
+        _ (prn "xxx" (viable? [4 498]))
+        result
+        (->> (tree-seq viable?
+                       (fn [[y x :as yx]]
+                         (vswap! !visited conj yx)
+                         (->> [(viable? [(inc y) x])
+                               (viable? [y (dec x)])
+                               (viable? [y (inc x)])]
+                              (keep identity)))
+                       origin)
+             (take 100)
+             doall)]
+    (prn result)
+    (prn (count result))))
 
 
 ;; REPL stuff; ignore.
