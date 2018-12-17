@@ -16,9 +16,19 @@
         (update :v2-start #(Long/parseLong %))
         (update :v2-end #(Long/parseLong %)))))
 
+(def origin [0 500])
+
+
 (defn again []
-  (->> (read-sample)
-       (mapv parse)))
+  (let [walls (->> (read-sample)
+                   (mapv parse))]
+    (tree-seq (fn [[y x]]
+                (< y 5))
+              (fn [[y x]]
+                ;; only one child
+                [[(inc y) x]])
+              origin)))
+
 
 ;; REPL stuff; ignore.
 
