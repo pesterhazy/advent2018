@@ -7,6 +7,12 @@
                     clojure.java.io/reader)]
     (vec (line-seq f))))
 
+(defn read-input
+  []
+  (with-open [f (-> "17/input.txt"
+                    clojure.java.io/reader)]
+    (vec (line-seq f))))
+
 (defn parse [line]
   (let [matches (re-matches #"([xy])=(\d+), ([xy])=(\d+)\.\.(\d+)" line)]
     (assert matches)
@@ -34,8 +40,8 @@
                    walls))
     yx))
 
-(defn again []
-  (let [walls (->> (read-sample)
+(defn solution-1 []
+  (let [walls (->> (read-input)
                    (mapv parse))
         my (max-y walls)
         !count (volatile! 0)
@@ -48,7 +54,7 @@
                 [[y x :as yx]]
                 (if (> y my)
                   false
-                  (let [_ (when-not (< (vswap! !count inc) 60)
+                  (let [_ (when-not (< (vswap! !count inc) 1000000)
                             (throw (ex-info "Exceeded max" {:exceeded true})))
                         _ (vswap! !visited conj yx)
                         down-settled (if (can-go [(inc y) x])
@@ -72,6 +78,10 @@
             (prn [:excceeded])
             nil)
           (throw e))))))
+
+(defn again []
+  (solution-1)
+  )
 
 
 ;; REPL stuff; ignore.
