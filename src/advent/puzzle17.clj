@@ -36,7 +36,7 @@
   (->> walls
        (map (fn [{:keys [k1 v1 v2-start v2-end]}]
               (if (= k1 "x")
-                (max v2-start v2-end)
+                (min v2-start v2-end)
                 v1)))
        (apply min)))
 
