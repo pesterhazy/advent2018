@@ -46,30 +46,39 @@
                    yx))
         visit (fn visit
                 [[y x :as yx]]
-                (when-not (< (vswap! !count inc) 40)
-                  (throw (ex-info "Exceeded max" {:exceeded true})))
-                (vswap! !visited conj yx)
-
-                (if (can-go [(inc y) x])
+                (if (> y my)
                   (do
-                    (prn [yx :down true])
-                    (visit [(inc y) x]))
-                  (do
-                    (if (can-go [y (dec x)])
-                      (do
-                        (prn [yx :left true])
-                        (visit [y (dec x)]))
-                      (do
-                        (prn [yx :left false])))
-                    (if (can-go [y (inc x)])
-                      (do
-                        (prn [yx :right true])
-                        (visit [y (inc x)]))
-                      (do
-                        (prn [yx :right false])))
-                    (prn [yx :down false]))))]
+                    (prn [:out-of-bounds yx])
+                    false)
+                  (let [_ (when-not (< (vswap! !count inc) 60)
+                            (throw (ex-info "Exceeded max" {:exceeded true})))
+                        _ (vswap! !visited conj yx)
+                        down-settled (if (can-go [(inc y) x])
+                                       (let [_ (prn [yx :down true])
+                                             down-settled (visit [(inc y) x])]
+                                         (prn [yx :down-done down-settled])
+                                         down-settled)
+                                       true)]
+                    (if down-settled
+                      (let [left-settled (if (can-go [y (dec x)])
+                                           (do
+                                             (prn [yx :left true])
+                                             (visit [y (dec x)]))
+                                           (do
+                                             (prn [yx :left false])
+                                             true))
+                            right-settled (if (can-go [y (inc x)])
+                                            (do
+                                              (prn [yx :right true])
+                                              (visit [y (inc x)]))
+                                            (do
+                                              (prn [yx :right false])
+                                              true))]
+                        (and left-settled right-settled))
+                      false))))]
     (try
-      (visit origin)
+      (visit (update origin 0 inc))
+      (prn (count @!visited))
       (catch Exception e
         (if (-> e ex-data :exceeded)
           (do
