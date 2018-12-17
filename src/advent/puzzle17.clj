@@ -35,27 +35,47 @@
     yx))
 
 (defn again []
-  (let [!visited (volatile! #{})
-        walls (->> (read-sample)
+  (let [walls (->> (read-sample)
                    (mapv parse))
         my (max-y walls)
-        viable? (fn [[y :as yx]]
-                  (when (and (<= y my) (free? walls yx) (not (@!visited yx)))
-                    yx))
-        _ (prn "xxx" (viable? [4 498]))
-        result
-        (->> (tree-seq viable?
-                       (fn [[y x :as yx]]
-                         (vswap! !visited conj yx)
-                         (->> [(viable? [(inc y) x])
-                               (when (< y my) (viable? [y (dec x)]))
-                               (when (< y my) (viable? [y (inc x)]))]
-                              (keep identity)))
-                       origin)
-             (take 100)
-             doall)]
-    (prn result)
-    (prn (count result))))
+        !count (volatile! 0)
+        !visited (volatile! #{})
+        can-go (fn [[y x :as yx]]
+                 (when (and (free? walls [(inc y) x])
+                            (not (@!visited yx)))
+                   yx))
+        visit (fn visit
+                [[y x :as yx]]
+                (when-not (< (vswap! !count inc) 40)
+                  (throw (ex-info "Exceeded max" {:exceeded true})))
+                (vswap! !visited conj yx)
+
+                (if (can-go [(inc y) x])
+                  (do
+                    (prn [yx :down true])
+                    (visit [(inc y) x]))
+                  (do
+                    (if (can-go [y (dec x)])
+                      (do
+                        (prn [yx :left true])
+                        (visit [y (dec x)]))
+                      (do
+                        (prn [yx :left false])))
+                    (if (can-go [y (inc x)])
+                      (do
+                        (prn [yx :right true])
+                        (visit [y (inc x)]))
+                      (do
+                        (prn [yx :right false])))
+                    (prn [yx :down false]))))]
+    (try
+      (visit origin)
+      (catch Exception e
+        (if (-> e ex-data :exceeded)
+          (do
+            (prn [:excceeded])
+            nil)
+          (throw e))))))
 
 
 ;; REPL stuff; ignore.
