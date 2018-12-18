@@ -40,88 +40,18 @@
                 v1)))
        (apply min)))
 
-(defn is-clay? [walls [y x :as yx]]
+(defn is-clay? [walls [y x]]
   (some (fn [{:keys [k1 v1 v2-start v2-end]}]
           (if (= k1 "x")
             (and (= x v1) (<= v2-start y v2-end))
             (and (= y v1) (<= v2-start x v2-end))))
         walls))
 
-#_(defn solution-1 []
-    (let [walls (->> (read-input)
-                     (mapv parse))
-          puzzle-min-y (min-y walls)
-          puzzle-max-y (max-y walls)
-          !count (volatile! 0)
-          !visited (volatile! #{})
-          !settled (volatile! {})
-          visit (fn visit
-                  [[y x :as yx] dir]
-                  (let [settled (if (not (<= y puzzle-max-y))
-                                  false
-                                  (let [_ (when-not (< (vswap! !count inc) 1000000)
-                                            (throw (ex-info "Exceeded max" {:exceeded true})))
-                                        _ (vswap! !visited conj yx)
-                                        down-settled (cond
-                                                       (not (free? walls [(inc y) x]))
-                                                       true
-                                                       (@!visited [(inc y) x])
-                                                       (do
-                                                         (assert (contains? @!settled [(inc y) x]))
-                                                         (assert (= true (get @!settled [(inc y) x])))
-                                                         #_(prn [:revisit :down [(inc y) x]])
-                                                         (@!settled [(inc y) x]))
-                                                       :else
-                                                       (visit [(inc y) x] :down))]
-                                    (if down-settled
-                                      (let [left-settled (cond
-                                                           (= dir :right)
-                                                           true
-                                                           (not (free? walls [y (dec x)]))
-                                                           true
-                                                           (@!visited [y (dec x)])
-                                                           true
-                                                           #_(do
-                                                               (assert (contains? @!settled [y (dec x)]))
-                                                               (assert false "revisit-left")
-                                                               (get @!settled [y (dec x)]))
-                                                           :else
-                                                           (visit [y (dec x)] :left))
-
-                                            right-settled (cond
-                                                            (= dir :left)
-                                                            true
-                                                            (not (free? walls [y (inc x)]))
-                                                            true
-                                                            (@!visited [y (inc x)])
-                                                            true
-                                                            #_(do
-                                                                (assert (contains? @!settled [y (inc x)]))
-                                                                (assert false "revisit-right")
-                                                                (get @!settled [y (inc x)]))
-                                                            :else
-                                                            (visit [y (inc x)] :right))]
-                                        (and left-settled right-settled))
-                                      false)))]
-                    (vswap! !settled assoc yx settled)
-                    settled))]
-      (try
-        (visit [0 500] :down)
-        (let [result (->> @!visited
-                          (filter (fn [[y _]] (<= puzzle-min-y y puzzle-max-y))))]
-          (prn (count result)))
-        (catch Exception e
-          (if (-> e ex-data :exceeded)
-            (do
-              (prn [:excceeded])
-              nil)
-            (throw e))))))
-
 ;; h/t
 ;; https://www.reddit.com/r/adventofcode/comments/a6wpup/2018_day_17_solutions/ebyq6mj/
 
 (defn solution-1 []
-  (let [walls (->> (read-sample)
+  (let [walls (->> (read-input)
                    (mapv parse))
         puzzle-min-y (min-y walls)
         puzzle-max-y (max-y walls)
@@ -173,7 +103,15 @@
     (try
       (visit [0 500] :down)
       (.addAll flowing settled)
-      (.size flowing)
+      ;; part1 part2
+      [(->> flowing
+            (filter (fn [[y _]]
+                      (<= puzzle-min-y y puzzle-max-y)))
+            count)
+       (->> settled
+            (filter (fn [[y _]]
+                      (<= puzzle-min-y y puzzle-max-y)))
+            count)]
       (catch Exception e
         (if (-> e ex-data :exceeded)
           (do
