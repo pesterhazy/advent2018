@@ -172,11 +172,8 @@
                         false)))))]
     (try
       (visit [0 500] :down)
-      (prn (->> settled
-                (concat flowing)
-                (filter (fn [[y x]]
-                          (<= puzzle-min-y y puzzle-max-y)))
-                count))
+      (.addAll flowing settled)
+      (.size flowing)
       (catch Exception e
         (if (-> e ex-data :exceeded)
           (do
