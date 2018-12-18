@@ -129,12 +129,11 @@
         settled (HashSet.)
         flowing (HashSet.)
         visit (fn visit [[y x :as yx] dir]
-                (prn [:visit yx dir])
                 (.add flowing yx)
                 (let [below [(inc y) x]]
                   (when (and (not (clay? below))
                              (not (.contains flowing below))
-                             (<= puzzle-min-y (first below) puzzle-max-y))
+                             (<= 1 (first below) puzzle-max-y))
                     (visit below :down))
                   (if (and (not (clay? below))
                            (not (.contains settled below)))
@@ -160,7 +159,7 @@
                           (loop [ptr right]
                             (when (.contains flowing ptr)
                               (.add settled ptr)
-                              (recur [(first ptr) (dec (second ptr))])))
+                              (recur [(first ptr) (inc (second ptr))])))
                           false)
 
                         (= :left dir)
