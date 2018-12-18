@@ -13,11 +13,26 @@
                     clojure.java.io/reader)]
     (vec (line-seq f))))
 
+(def directions
+  (for [x [-1 0 1] y [-1 0 1] :when (or (not= x 0) (not= y 0))] [y x]))
+
+(defn pos+ [& vs] (apply mapv + vs))
+
+(defn neighbors [state yx]
+  (->> directions
+       (map (partial pos+ yx))
+       (keep (partial get-in state))))
+
+(defn turn-1 [state [y x]]
+  (let [square (get-in state [y x])]
+    )
+  )
+
 (defn turn [state]
   (mapv (fn [y]
           (->> (range (count (get state y)))
                (map (fn [x]
-                      (get-in state [y x])))
+                      (turn-1 state [y x])))
                str/join))
         (range (count state))))
 
