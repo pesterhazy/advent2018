@@ -100,24 +100,17 @@
 
                         :else
                         false)))))]
-    (try
-      (visit [0 500] :down)
-      (.addAll flowing settled)
-      ;; part1 part2
-      [(->> flowing
-            (filter (fn [[y _]]
-                      (<= puzzle-min-y y puzzle-max-y)))
-            count)
-       (->> settled
-            (filter (fn [[y _]]
-                      (<= puzzle-min-y y puzzle-max-y)))
-            count)]
-      (catch Exception e
-        (if (-> e ex-data :exceeded)
-          (do
-            (prn [:excceeded])
-            nil)
-          (throw e))))))
+    (visit [0 500] :down)
+    (.addAll flowing settled)
+    ;; part1 part2
+    [(->> flowing
+          (filter (fn [[y _]]
+                    (<= puzzle-min-y y puzzle-max-y)))
+          count)
+     (->> settled
+          (filter (fn [[y _]]
+                    (<= puzzle-min-y y puzzle-max-y)))
+          count)]))
 
 ;; REPL stuff; ignore.
 
