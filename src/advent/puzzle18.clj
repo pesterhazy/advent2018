@@ -59,25 +59,25 @@
       (nth 10)
       value))
 
+(def goal 1000000000)
+
 (defn solution-2 []
-  (->> (read-input)
-       (iterate turn)
-       (map-indexed vector)
-       (take 100000)
-       (reduce (fn [acc [idx state]]
-                 (when (zero? (mod idx 100))
-                   (println idx))
-                 #_(do
-                     (print "\033[H\033[2J")
-                     (println idx)
-                     (run! println state)
-                     (read-line))
-                 (let [s (str/join state)]
-                   (when (acc s)
-                     (println "dupe" idx (acc s)))
-                   (assoc acc s idx)))
-               {}))
-  nil)
+  (let [[start length states]
+        (->> (read-input)
+             (iterate turn)
+             (map-indexed vector)
+             (reduce (fn [[acc-map acc-states] [idx state]]
+                       (when (zero? (mod idx 100))
+                         (println idx))
+                       (let [s (str/join state)]
+                         (if (acc-map s)
+                           (reduced [(acc-map s)
+                                     (- idx (acc-map s))
+                                     acc-states])
+                           [(assoc acc-map s idx)
+                            (assoc acc-states idx state)])))
+                     [{} {}]))]
+    (value (states (+ start (mod (- goal start) length))))))
 
 ;; REPL stuff; ignore.
 
