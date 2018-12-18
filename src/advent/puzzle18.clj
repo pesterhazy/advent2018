@@ -53,13 +53,16 @@
                 frequencies)]
     (* (fs \|) (fs \#))))
 
-;; REPL stuff; ignore.
-
-(defn again []
-  (-> (->> (read-sample)
+(defn solution-1 []
+  (-> (->> (read-input)
            (iterate turn))
       (nth 10)
       value))
+
+;; REPL stuff; ignore.
+
+(defn again []
+  (solution-1))
 
 (defonce bq (java.util.concurrent.LinkedBlockingQueue.))
 
