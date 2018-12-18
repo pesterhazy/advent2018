@@ -47,15 +47,19 @@
                str/join))
         (range (count state))))
 
+(defn value [state]
+  (let [fs (->> state
+                (mapcat seq)
+                frequencies)]
+    (* (fs \|) (fs \#))))
+
 ;; REPL stuff; ignore.
 
 (defn again []
-  (->> (read-sample)
-       (iterate turn)
-       (take 11)
-       (run! (fn [generation]
-               (run! println generation)
-               (println)))))
+  (-> (->> (read-sample)
+           (iterate turn))
+      (nth 10)
+      value))
 
 (defonce bq (java.util.concurrent.LinkedBlockingQueue.))
 
