@@ -21,12 +21,23 @@
 (defn neighbors [state yx]
   (->> directions
        (map (partial pos+ yx))
-       (keep (partial get-in state))))
+       (keep (partial get-in state))
+       frequencies))
 
-(defn turn-1 [state [y x]]
-  (let [square (get-in state [y x])]
-    )
-  )
+(defn turn-1 [state yx]
+  (let [square (get-in state yx)
+        nbs (neighbors state yx)]
+    (case square
+      \. (if (>= (nbs \| 0) 3)
+           \|
+           square)
+      \| (if (>= (nbs \# 0) 3)
+           \#
+           square)
+      \# (if (and (>= (nbs \# 0) 1)
+                  (>= (nbs \| 0) 1))
+           square
+           \.))))
 
 (defn turn [state]
   (mapv (fn [y]
@@ -41,7 +52,7 @@
 (defn again []
   (->> (read-sample)
        (iterate turn)
-       (take 2)
+       (take 11)
        (run! (fn [generation]
                (run! println generation)
                (println)))))
