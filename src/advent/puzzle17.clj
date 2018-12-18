@@ -130,6 +130,7 @@
         flowing (HashSet.)
         visit (fn visit [[y x :as yx] dir]
                 (prn [:visit yx dir])
+                (.add flowing yx)
                 (let [below [(inc y) x]]
                   (when (and (not (clay? below))
                              (not (.contains flowing below))
@@ -172,8 +173,11 @@
                         false)))))]
     (try
       (visit [0 500] :down)
-      (prn (.size settled))
-      (prn (.size flowing))
+      (prn (->> settled
+                (concat flowing)
+                (filter (fn [[y x]]
+                          (<= puzzle-min-y y puzzle-max-y)))
+                count))
       (catch Exception e
         (if (-> e ex-data :exceeded)
           (do
