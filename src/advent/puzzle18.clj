@@ -59,10 +59,28 @@
       (nth 10)
       value))
 
+(defn solution-2 []
+  (->> (read-input)
+       (iterate turn)
+       (map-indexed vector)
+       (drop 500)
+       (take 5)
+       (reduce (fn [acc [idx state]]
+                 (print "\033[H\033[2J")
+                 (println idx)
+                 (run! println state)
+                 (read-line)
+                 (let [s (str/join state)]
+                   (when (acc s)
+                     (println "dupe" #_(acc s)))
+                   (assoc acc s idx)))
+               {}))
+  nil)
+
 ;; REPL stuff; ignore.
 
 (defn again []
-  (solution-1))
+  (solution-2))
 
 (defonce bq (java.util.concurrent.LinkedBlockingQueue.))
 
