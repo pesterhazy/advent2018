@@ -41,37 +41,38 @@
 (defn eq [^long a ^long b] (if (= a b) 1 0))
 
 (defn apply-op
-  [regs {:keys [opcode ^long a ^long b ^long c]}]
+  [^longs regs {:keys [opcode ^long a ^long b ^long c]}]
   (case opcode
-    :addr (assoc regs c (+ ^long (regs a) ^long (regs b)))
-    :addi (assoc regs c (+ ^long (regs a) b))
-    :mulr (assoc regs c (* ^long (regs a) ^long (regs b)))
-    :muli (assoc regs c (* ^long (regs a) b))
-    :banr (assoc regs c (bit-and ^long (regs a) ^long (regs b)))
-    :bani (assoc regs c (bit-and ^long (regs a) b))
-    :borr (assoc regs c (bit-or ^long (regs a) ^long (regs b)))
-    :bori (assoc regs c (bit-or ^long (regs a) b))
-    :setr (assoc regs c (regs a))
-    :seti (assoc regs c a)
-    :gtir (assoc regs c (gt a ^long (regs b)))
-    :gtri (assoc regs c (gt ^long (regs a) b))
-    :gtrr (assoc regs c (gt ^long (regs a) ^long (regs b)))
-    :eqir (assoc regs c (eq a ^long (regs b)))
-    :eqri (assoc regs c (eq ^long (regs a) b))
-    :eqrr (assoc regs c (eq ^long (regs a) ^long (regs b)))))
+    :addr (aset-long regs c (+ ^long (aget regs a) ^long (aget regs b)))
+    :addi (aset-long regs c (+ ^long (aget regs a) b))
+    :mulr (aset-long regs c (* ^long (aget regs a) ^long (aget regs b)))
+    :muli (aset-long regs c (* ^long (aget regs a) b))
+    :banr (aset-long regs c (bit-and ^long (aget regs a) ^long (aget regs b)))
+    :bani (aset-long regs c (bit-and ^long (aget regs a) b))
+    :borr (aset-long regs c (bit-or ^long (aget regs a) ^long (aget regs b)))
+    :bori (aset-long regs c (bit-or ^long (regs a) b))
+    :setr (aset-long regs c (aget regs a))
+    :seti (aset-long regs c a)
+    :gtir (aset-long regs c (gt a (aget regs b)))
+    :gtri (aset-long regs c (gt (aget regs a) b))
+    :gtrr (aset-long regs c (gt (aget regs a) (aget regs b)))
+    :eqir (aset-long regs c (eq a (aget regs b)))
+    :eqri (aset-long regs c (eq (aget regs a) b))
+    :eqrr (aset-long regs c (eq (aget regs a) (aget regs b))))
+  regs)
 
 (defn execute [initial-regs]
-  (let [{:keys [header body]} (process-input (read-input))]
-    (loop [regs initial-regs
-           i 0]
+  (let [regs (long-array initial-regs)
+        {:keys [^long header body]} (process-input (read-input))]
+    (loop [i 0]
       (when (zero? (mod i 100000))
         (println i))
-      (let [ip (get regs header)]
+      (let [ip (aget regs header)]
         (if (<= 0 ip (dec (count body)))
-          (let [op (nth body ip)
-                new-regs (-> regs
-                             (apply-op op))]
-            (recur (update new-regs header inc) (inc i)))
+          (let [op (nth body ip)]
+            (apply-op regs op)
+            (aset-long regs header (inc (aget regs header)))
+            (recur (inc i)))
           (nth regs 0))))))
 
 (defn again []
