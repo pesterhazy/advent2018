@@ -58,14 +58,13 @@
     :gtrr (aset-long regs c (gt (aget regs a) (aget regs b)))
     :eqir (aset-long regs c (eq a (aget regs b)))
     :eqri (aset-long regs c (eq (aget regs a) b))
-    :eqrr (aset-long regs c (eq (aget regs a) (aget regs b))))
-  regs)
+    :eqrr (aset-long regs c (eq (aget regs a) (aget regs b)))))
 
 (defn execute [initial-regs]
   (let [regs (long-array initial-regs)
         {:keys [^long header body]} (process-input (read-input))]
     (loop [i 0]
-      (when (zero? (mod i 100000))
+      (when (zero? (mod i 10000000))
         (println i))
       (let [ip (aget regs header)]
         (if (<= 0 ip (dec (count body)))
