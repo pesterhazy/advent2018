@@ -1,7 +1,7 @@
 (ns advent.puzzle19
   (:require [clojure.string :as str]))
 
-(set! *unchecked-math* :warn-on-boxed)
+#_(set! *unchecked-math* :warn-on-boxed)
 (set! *warn-on-reflection* true)
 
 (defn read-sample
@@ -62,17 +62,20 @@
 
 (defn execute [initial-regs]
   (let [{:keys [header body]} (process-input (read-input))]
-    (loop [regs initial-regs]
+    (loop [regs initial-regs
+           i 0]
+      (when (zero? (mod i 100000))
+        (println i))
       (let [ip (get regs header)]
         (if (<= 0 ip (dec (count body)))
           (let [op (nth body ip)
                 new-regs (-> regs
                              (apply-op op))]
-            (recur (update new-regs header inc)))
+            (recur (update new-regs header inc) (inc i)))
           (nth regs 0))))))
 
 (defn again []
-  (time (execute [1 0 0 0 0 0])))
+  (time (execute [0 0 0 0 0 0])))
 
 
 ;; REPL stuff; ignore.
