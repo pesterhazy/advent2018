@@ -38,7 +38,8 @@
 
 (defn gt [^long a ^long b] (if (> a b) 1 0))
 
-(defn eq [^long a ^long b] (if (= a b) 1 0))
+(defn eq [^long a ^long b]
+  (if (= a b) 1 0))
 
 (defn apply-op
   [regs {:keys [opcode ^long a ^long b ^long c] :as op}]
@@ -58,7 +59,14 @@
     :gtrr (assoc regs c (gt ^long (regs a) ^long (regs b)))
     :eqir (assoc regs c (eq a ^long (regs b)))
     :eqri (assoc regs c (eq ^long (regs a) b))
-    :eqrr (assoc regs c (eq ^long (regs a) ^long (regs b)))))
+    :eqrr (do
+            #_(prn regs)
+            #_(prn a b c :-- (regs a) (regs b))
+            (let [regs (-> regs
+                           #_(assoc 1 (regs 4))
+                           #_(assoc 5 (regs 5))
+                           )]
+              (assoc regs c (eq ^long (regs a) ^long (regs b)))))))
 
 (defn execute [initial-regs]
   (let [{:keys [header body]} (process-input (read-input))
@@ -66,23 +74,24 @@
     (loop [regs initial-regs
            i 0]
       (when (zero? (mod i 100000))
-        (println i regs))
+        (println regs i))
       (let [ip (get regs header)]
         (if (<= 0 ip (dec (count body)))
           (let [op (nth body ip)
                 new-regs (-> regs
                              (apply-op op))]
+            #_(println [regs ((juxt :opcode :a :b :c) op) new-regs])
             (.addLast log [regs ((juxt :opcode :a :b :c) op) new-regs])
             (when (> (.size log) 100)
               (.removeFirst log))
             (recur (update new-regs header inc) (inc i)))
           (do
-            (doseq [entry log]
-              (println entry))
+            #_(doseq [entry log]
+                (println entry))
             (nth regs 0)))))))
 
 (defn again []
-  (time (execute [0 0 0 0 0 0])))
+  (time (execute [1 0 0 0 0 0])))
 
 
 ;; REPL stuff; ignore.
@@ -121,3 +130,6 @@
 ;; of function passed to wait
 
 (.add ^java.util.concurrent.LinkedBlockingQueue bq true)
+
+(defn -main []
+  (execute [1 0 0 0 0 0]))
