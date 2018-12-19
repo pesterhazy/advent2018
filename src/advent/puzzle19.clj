@@ -41,7 +41,7 @@
 (defn eq [^long a ^long b] (if (= a b) 1 0))
 
 (defn apply-op
-  [regs {:keys [opcode ^long a ^long b ^long c]}]
+  [regs {:keys [opcode ^long a ^long b ^long c] :as op}]
   (case opcode
     :addr (assoc regs c (+ ^long (regs a) ^long (regs b)))
     :addi (assoc regs c (+ ^long (regs a) b))
@@ -61,18 +61,25 @@
     :eqrr (assoc regs c (eq ^long (regs a) ^long (regs b)))))
 
 (defn execute [initial-regs]
-  (let [{:keys [header body]} (process-input (read-input))]
+  (let [{:keys [header body]} (process-input (read-input))
+        log (java.util.LinkedList.)]
     (loop [regs initial-regs
            i 0]
       (when (zero? (mod i 100000))
-        (println i))
+        (println i regs))
       (let [ip (get regs header)]
         (if (<= 0 ip (dec (count body)))
           (let [op (nth body ip)
                 new-regs (-> regs
                              (apply-op op))]
+            (.addLast log [regs ((juxt :opcode :a :b :c) op) new-regs])
+            (when (> (.size log) 100)
+              (.removeFirst log))
             (recur (update new-regs header inc) (inc i)))
-          (nth regs 0))))))
+          (do
+            (doseq [entry log]
+              (println entry))
+            (nth regs 0)))))))
 
 (defn again []
   (time (execute [0 0 0 0 0 0])))
