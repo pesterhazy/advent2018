@@ -59,16 +59,15 @@
     :eqrr (assoc regs c (eq (regs a) (regs b)))))
 
 (defn again []
-  (let [{:keys [header body]} (process-input (read-sample))]
+  (let [{:keys [header body]} (process-input (read-input))]
     (loop [regs [0 0 0 0 0 0]]
       (let [ip (get regs header)]
         (if (<= 0 ip (dec (count body)))
           (let [op (nth body ip)
-                _ (prn op)
                 new-regs (-> regs
                              (apply-op op))]
             (recur (update new-regs header inc)))
-          (nth regs header))))))
+          (nth regs 0))))))
 
 ;; REPL stuff; ignore.
 
