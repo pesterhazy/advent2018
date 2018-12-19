@@ -21,12 +21,12 @@
                  second
                  Long/parseLong)
      :body (->> body
-                (map (fn [line]
-                       (-> (zipmap [:opcode :a :b :c] (str/split line #"\s"))
-                           (update :opcode keyword)
-                           (update :a #(Long/parseLong %))
-                           (update :b #(Long/parseLong %))
-                           (update :c #(Long/parseLong %))))))}))
+                (mapv (fn [line]
+                        (-> (zipmap [:opcode :a :b :c] (str/split line #"\s"))
+                            (update :opcode keyword)
+                            (update :a #(Long/parseLong %))
+                            (update :b #(Long/parseLong %))
+                            (update :c #(Long/parseLong %))))))}))
 
 (def i-data (process-input (read-input)))
 
@@ -59,7 +59,16 @@
     :eqrr (assoc regs c (eq (regs a) (regs b)))))
 
 (defn again []
-  (process-input (read-input)))
+  (let [{:keys [header body]} (process-input (read-sample))]
+    (loop [regs [0 0 0 0 0 0]]
+      (let [ip (get regs header)]
+        (if (<= 0 ip (dec (count body)))
+          (let [op (nth body ip)
+                _ (prn op)
+                new-regs (-> regs
+                             (apply-op op))]
+            (recur (update new-regs header inc)))
+          (nth regs header))))))
 
 ;; REPL stuff; ignore.
 
