@@ -72,7 +72,7 @@
           (nth regs 0))))))
 
 (defn again []
-  (time (execute [0 0 0 0 0 0])))
+  (time (execute [1 0 0 0 0 0])))
 
 
 ;; REPL stuff; ignore.
