@@ -1,6 +1,8 @@
 (ns advent.puzzle19
-  (:require [clojure.string :as str]
-            [clojure.set :as set]))
+  (:require [clojure.string :as str]))
+
+(set! *unchecked-math* :warn-on-boxed)
+(set! *warn-on-reflection* true)
 
 (defn read-sample
   []
@@ -34,33 +36,33 @@
   [:addr :addi :mulr :muli :banr :bani :borr :bori :setr :seti :gtir :gtri :gtrr
    :eqir :eqri :eqrr])
 
-(defn gt [a b] (if (> a b) 1 0))
+(defn gt [^long a ^long b] (if (> a b) 1 0))
 
-(defn eq [a b] (if (= a b) 1 0))
+(defn eq [^long a ^long b] (if (= a b) 1 0))
 
 (defn apply-op
-  [regs {:keys [opcode a b c]}]
+  [regs {:keys [opcode ^long a ^long b ^long c]}]
   (case opcode
-    :addr (assoc regs c (+ (regs a) (regs b)))
-    :addi (assoc regs c (+ (regs a) b))
-    :mulr (assoc regs c (* (regs a) (regs b)))
-    :muli (assoc regs c (* (regs a) b))
-    :banr (assoc regs c (bit-and (regs a) (regs b)))
-    :bani (assoc regs c (bit-and (regs a) b))
-    :borr (assoc regs c (bit-or (regs a) (regs b)))
-    :bori (assoc regs c (bit-or (regs a) b))
+    :addr (assoc regs c (+ ^long (regs a) ^long (regs b)))
+    :addi (assoc regs c (+ ^long (regs a) b))
+    :mulr (assoc regs c (* ^long (regs a) ^long (regs b)))
+    :muli (assoc regs c (* ^long (regs a) b))
+    :banr (assoc regs c (bit-and ^long (regs a) ^long (regs b)))
+    :bani (assoc regs c (bit-and ^long (regs a) b))
+    :borr (assoc regs c (bit-or ^long (regs a) ^long (regs b)))
+    :bori (assoc regs c (bit-or ^long (regs a) b))
     :setr (assoc regs c (regs a))
     :seti (assoc regs c a)
-    :gtir (assoc regs c (gt a (regs b)))
-    :gtri (assoc regs c (gt (regs a) b))
-    :gtrr (assoc regs c (gt (regs a) (regs b)))
-    :eqir (assoc regs c (eq a (regs b)))
-    :eqri (assoc regs c (eq (regs a) b))
-    :eqrr (assoc regs c (eq (regs a) (regs b)))))
+    :gtir (assoc regs c (gt a ^long (regs b)))
+    :gtri (assoc regs c (gt ^long (regs a) b))
+    :gtrr (assoc regs c (gt ^long (regs a) ^long (regs b)))
+    :eqir (assoc regs c (eq a ^long (regs b)))
+    :eqri (assoc regs c (eq ^long (regs a) b))
+    :eqrr (assoc regs c (eq ^long (regs a) ^long (regs b)))))
 
-(defn again []
+(defn execute [initial-regs]
   (let [{:keys [header body]} (process-input (read-input))]
-    (loop [regs [0 0 0 0 0 0]]
+    (loop [regs initial-regs]
       (let [ip (get regs header)]
         (if (<= 0 ip (dec (count body)))
           (let [op (nth body ip)
@@ -68,6 +70,10 @@
                              (apply-op op))]
             (recur (update new-regs header inc)))
           (nth regs 0))))))
+
+(defn again []
+  (time (execute [0 0 0 0 0 0])))
+
 
 ;; REPL stuff; ignore.
 
@@ -85,10 +91,10 @@
 
   (wait solution-2)"
   [fun]
-  (.clear bq)
+  (.clear ^java.util.concurrent.LinkedBlockingQueue bq)
   (prn (fun))
   (loop []
-    (if (.poll bq)
+    (if (.poll ^java.util.concurrent.LinkedBlockingQueue bq)
       (do
         (println (apply str (repeat 60 "*")))
         (prn (fun))
@@ -104,4 +110,4 @@
 ;; When ns gets reloaded via nREPL, trigger new call
 ;; of function passed to wait
 
-(.add bq true)
+(.add ^java.util.concurrent.LinkedBlockingQueue bq true)
